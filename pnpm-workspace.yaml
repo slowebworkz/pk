@@ -66,8 +66,8 @@ catalog:
   prettier: ^3.8.4
 
   # React
-  react: ^19.2.7
-  react-dom: ^19.2.7
+  react: ^19.2.8
+  react-dom: ^19.2.8
 
   # Solid
   solid-js: ^1.9.0
