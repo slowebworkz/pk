@@ -378,7 +378,8 @@ export class AriaPolicyEngine extends InvariantBase {
     const cached = AriaPolicyEngine.#removeAttributeFixCache.get(attr)
     if (cached) return cached
     const fix: AriaFix = {
-      kind: `removeAttribute:${attr}`,
+      kind: 'removeAttribute',
+      attribute: attr,
       apply: ({ props }) => {
         if (!(attr in props)) return { applied: false, next: props }
         return { applied: true, next: omitProp(props, attr), previous: props }
@@ -698,7 +699,8 @@ export class AriaPolicyEngine extends InvariantBase {
     if ('aria-live' in props) return NO_VIOLATIONS
 
     const injectLive: AriaFix = {
-      kind: `injectLive:${effectiveRole}`,
+      kind: 'injectLive',
+      attribute: 'aria-live',
       apply: (ctx) => ({
         applied: true,
         next: { ...ctx.props, 'aria-live': impliedLive },

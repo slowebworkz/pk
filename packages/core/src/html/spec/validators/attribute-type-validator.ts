@@ -1,26 +1,9 @@
-import type { AnyRecord } from '@praxis-kit/primitive'
-import type { AriaContext, AriaFix, AriaResult, AriaRule } from '../../../types'
-import { HtmlDiagnostics } from '@praxis-kit/contract'
+import type { AriaContext, AriaResult, AriaRule } from '../../../types'
+import { HtmlDiagnostics, removeAttributeFix } from '@praxis-kit/contract'
 import type { AttributeTypePolicy } from '../types'
 import type { InputAttributeName } from '../attributes/input'
 
 const DEFAULT_INPUT_TYPE = 'text'
-
-function omit<T extends AnyRecord>(props: T, key: string): T {
-  const next = { ...props } as AnyRecord
-  delete next[key]
-  return next as T
-}
-
-function removeAttributeFix(attribute: string): AriaFix {
-  return {
-    kind: `removeAttribute:${attribute}` as const,
-    apply: ({ props }) => {
-      if (!(attribute in props)) return { applied: false, next: props }
-      return { applied: true, next: omit(props, attribute), previous: props }
-    },
-  }
-}
 
 // Generic validator: turns an `AttributeTypePolicy` fact ("this attribute only applies to these
 // input types") into a scoped, cache-friendly `AriaRule`, so adding a new policy entry never

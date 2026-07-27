@@ -107,7 +107,8 @@ describe('createPolymorphic2 — resolveAria()', () => {
             severity: 'error' as const,
             fixable: true as const,
             fix: {
-              kind: 'removeAttribute:data-unsafe' as const,
+              kind: 'removeAttribute' as const,
+              attribute: 'data-unsafe',
               apply: ({ props }: { props: Record<string, unknown> }) => {
                 const { 'data-unsafe': _omit, ...rest } = props
                 return { applied: true as const, next: rest, previous: props }
