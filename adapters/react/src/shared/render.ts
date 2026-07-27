@@ -225,7 +225,10 @@ export function render<TProps extends KnownProps>({
       tag: state.tag,
       props: state.normalizedProps,
     })
-    runtime.options.htmlChildrenEvaluatorFn?.(state.tag)?.evaluate(getNormalizedChildren())
+    runtime.options.htmlChildrenEvaluatorFn?.(state.tag)?.evaluate(getNormalizedChildren(), {
+      tag: state.tag,
+      props: state.normalizedProps,
+    })
   }
 
   // Render-prop path — caller receives resolved props directly; no Slot, no cloneElement.

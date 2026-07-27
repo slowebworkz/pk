@@ -146,7 +146,9 @@ export function createContractComponent<
           props: hostState.normalizedProps,
         })
       }
-      options.htmlChildrenEvaluatorFn?.(hostState.tag)?.evaluate(children)
+      options
+        .htmlChildrenEvaluatorFn?.(hostState.tag)
+        ?.evaluate(children, { tag: hostState.tag, props: hostState.normalizedProps })
 
       diffAndApplyAttributes(this, hostState, this._pipelineAttrs, props)
     }
