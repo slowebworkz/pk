@@ -107,6 +107,7 @@ export enum DiagnosticCode {
   TailwindMultipleDisplayProps = 'CSS6001',
   TailwindReservedLayoutLiteral = 'CSS6002',
   TailwindDeadVariantClass = 'CSS6003',
+  TailwindLayoutOnVoidTag = 'CSS6004',
 
   // Plugin API contract violations (developer-facing, not user-facing)
   PluginInvalidShape = 'PLUGIN7001',

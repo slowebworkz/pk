@@ -21,13 +21,13 @@
     "@praxis-kit/contract": "workspace:*",
     "@praxis-kit/diagnostics": "workspace:*",
     "@praxis-kit/pipeline-kit": "workspace:*",
+    "@praxis-kit/primitive": "workspace:*",
     "type-fest": "catalog:"
   },
   "devDependencies": {
     "tsup": "catalog:",
     "vitest": "catalog:",
-    "@praxis-kit/core": "workspace:*",
-    "@praxis-kit/primitive": "workspace:*"
+    "@praxis-kit/core": "workspace:*"
   },
   "repository": {
     "type": "git",

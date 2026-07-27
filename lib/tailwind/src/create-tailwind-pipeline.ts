@@ -1,7 +1,7 @@
 import { cn, createClassPipeline } from '@praxis-kit/core'
 import { ConsoleReporter, DefaultPolicy, Diagnostics, Severity } from '@praxis-kit/diagnostics'
 import { composePipelines } from '@praxis-kit/pipeline-kit'
-import { isString, iterate } from '@praxis-kit/primitive'
+import { VOID_TAGS, isString, iterate } from '@praxis-kit/primitive'
 
 import { ClassBuilder } from './class-builder'
 import { ClassClassifier } from './class-classifier'
@@ -45,6 +45,7 @@ const devDiagnostics = new Diagnostics(
 const classifier = new ClassClassifier()
 const evaluator = new DependencyEvaluator(defaultDependencyRules)
 const builder = new ClassBuilder()
+const VOID_TAG_SET: ReadonlySet<string> = new Set(VOID_TAGS)
 
 function normalizeVariantValue(value: VariantValue): string {
   if (isString(value)) return value
@@ -63,6 +64,17 @@ function resolveLayout(
     diagnostics.warn(TailwindDiagnostics.multipleDisplayProps(active))
   }
   return active[0] ?? 'none'
+}
+
+// flex/grid set an element's *inner* display — the formatting context used to lay
+// out children. A void element (img, input, br, ...) can never have children, so
+// there's nothing for that formatting context to apply to; the mode (and any
+// gap-* utility, which only survives filtering when family is 'flex'/'grid') is
+// dead weight. Distinct from block/inline/hidden/etc., which set the element's
+// *outer* display and stay fully meaningful on a childless element.
+function warnLayoutOnVoidTag(diagnostics: Diagnostics, tag: unknown, state: LayoutState): void {
+  if (state.family === 'none' || !isString(tag) || !VOID_TAG_SET.has(tag)) return
+  diagnostics.warn(TailwindDiagnostics.layoutOnVoidTag(tag, state.mode))
 }
 
 function warnReservedLayoutLiterals(diagnostics: Diagnostics, tokens: ClassifiedToken[]): void {
@@ -211,6 +223,11 @@ export function createTailwindPipeline<V extends VariantMap = VariantMap>(
     const tokens = classifyTokens(resolvedClasses)
     const state = new LayoutState(mode)
     const filtered = tokens.filter((token) => evaluator.evaluate(token, state))
+
+    // Same devDiagnostics precedent as the conflict warning above — flex/grid
+    // being a no-op on a void tag is always a misconfiguration, not something
+    // a component's own strict/diagnostics policy should be able to suppress.
+    if (DEV) warnLayoutOnVoidTag(devDiagnostics, tag, state)
 
     return { mode, state, filtered, tokens, props, recipe }
   }
