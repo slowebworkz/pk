@@ -856,6 +856,9 @@ importers:
       '@praxis-kit/pipeline-kit':
         specifier: workspace:*
         version: link:../pipeline-kit
+      '@praxis-kit/primitive':
+        specifier: workspace:*
+        version: link:../primitive
       type-fest:
         specifier: 'catalog:'
         version: 5.8.0
@@ -863,9 +866,6 @@ importers:
       '@praxis-kit/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@praxis-kit/primitive':
-        specifier: workspace:*
-        version: link:../primitive
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.20)(tsx@4.23.1)(typescript@6.0.3)

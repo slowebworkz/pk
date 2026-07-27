@@ -29,4 +29,15 @@ export const TailwindDiagnostics = {
         `layout mode "${mode}" ("${classStr}") — it produces nothing in this mode.`,
     }
   },
+
+  layoutOnVoidTag(tag: string, mode: string): DiagnosticInput {
+    return {
+      code: DiagnosticCode.TailwindLayoutOnVoidTag,
+      category: DiagnosticCategory.Contract,
+      message:
+        `[createTailwindPipeline] "${mode}" sets <${tag}>'s inner display, but <${tag}> is a void ` +
+        `element and can never have children — there is nothing for a flex/grid formatting context ` +
+        `to apply to, so "${mode}" (and any gap-* utility) has no effect here.`,
+    }
+  },
 }

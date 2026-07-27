@@ -1,3 +1,4 @@
+import { VOID_TAGS } from '@praxis-kit/primitive'
 import type { HtmlTags } from './types'
 
 /**
@@ -17,27 +18,12 @@ import type { HtmlTags } from './types'
 export const METADATA_TAGS = ['script', 'template'] as const satisfies HtmlTags
 
 /**
- * HTML void elements.
- *
- * Void elements cannot have child nodes and therefore all share the same
- * empty content model.
+ * HTML void elements — re-exported from `@praxis-kit/primitive`, the single
+ * source of truth also consulted by the Tailwind pipeline's flex/grid-on-void-tag
+ * warning. Void elements cannot have child nodes and therefore all share the
+ * same empty content model.
  */
-export const VOID_TAGS = [
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr',
-] as const satisfies HtmlTags
+export { VOID_TAGS }
 
 /**
  * Elements whose content model is character data only.

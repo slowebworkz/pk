@@ -380,6 +380,61 @@ describe('createTailwindPipeline — multiple display props (mutual exclusion)',
   })
 })
 
+describe('createTailwindPipeline — flex/grid on a void tag', () => {
+  // Same devDiagnostics precedent as the conflict warning above — a void tag
+  // structurally can't have children, so flex/grid is always dead weight there
+  // regardless of the component's own strict/diagnostics policy.
+  const pipeline = createTailwindPipeline({}, silentDiagnostics)
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('warns when flex is set on a void tag', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    pipeline.pipeline('img', { flex: true }, '', undefined)
+    expect(warn).toHaveBeenCalledOnce()
+    expect(warn.mock.calls[0]![0]).toMatch(/img.*flex/i)
+  })
+
+  it('warns when grid is set on a void tag', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    pipeline.pipeline('input', { grid: true }, '', undefined)
+    expect(warn).toHaveBeenCalledOnce()
+    expect(warn.mock.calls[0]![0]).toMatch(/input.*grid/i)
+  })
+
+  it.each(['inline-flex', 'inline-grid'] as const)('warns for %s on a void tag', (mode) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    pipeline.pipeline('br', { [mode]: true }, '', undefined)
+    expect(warn).toHaveBeenCalledOnce()
+  })
+
+  it('does not warn when flex is set on a non-void tag', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    pipeline.pipeline('div', { flex: true }, '', undefined)
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('does not warn for a void tag with no display prop set', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    pipeline.pipeline('img', {}, '', undefined)
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('does not warn for a void tag with block set (outer display stays meaningful)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    pipeline.pipeline('img', { block: true }, '', undefined)
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('does not throw and still strips flex classes when tag is not a string', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    expect(() => pipeline.pipeline(() => null, { flex: true }, '', undefined)).not.toThrow()
+    expect(warn).not.toHaveBeenCalled()
+  })
+})
+
 describe('createTailwindPipeline — reserved layout literals', () => {
   const pipeline = createTailwindPipeline({}, warnDiagnostics)
 
