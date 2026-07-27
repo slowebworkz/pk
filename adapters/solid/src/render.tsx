@@ -146,7 +146,9 @@ export function render<TProps extends KnownProps>({
 
   if (process.env.NODE_ENV !== 'production') {
     createEffect(() =>
-      runtime.options.htmlChildrenEvaluatorFn?.(tag())?.evaluate(toChildArray(known.children)),
+      runtime.options
+        .htmlChildrenEvaluatorFn?.(tag())
+        ?.evaluate(toChildArray(known.children), { tag: tag(), props: normalizedProps() }),
     )
   }
 

@@ -64,11 +64,21 @@ function taggedComponentEl(defaultTag: string) {
   return { type: Component, props: {} }
 }
 
-function check(contract: EnforcementOptions, children: unknown[]) {
-  return diagnoseChildren(contract.children!, children, 'Component', {
-    exclusiveChildren: contract.exclusiveChildren,
-    allowText: contract.allowText,
-  })
+function check(
+  contract: EnforcementOptions,
+  children: unknown[],
+  props: Record<string, unknown> = {},
+) {
+  return diagnoseChildren(
+    contract.children!,
+    children,
+    'Component',
+    {
+      exclusiveChildren: contract.exclusiveChildren,
+      allowText: contract.allowText,
+    },
+    { tag: 'Component', props },
+  )
 }
 
 // ─── listContract ─────────────────────────────────────────────────────────────
@@ -405,17 +415,17 @@ describe('anchorContract', () => {
 
 describe('labelContract', () => {
   it('accepts a single labelable control alongside text', () => {
-    expect(check(labelContract, [el('input')])).toEqual([])
+    expect(check(labelContract, ['Email', el('input')])).toEqual([])
   })
 
   it('accepts no control at all', () => {
-    expect(check(labelContract, [el('span')])).toEqual([])
+    expect(check(labelContract, [el('span')], { 'aria-label': 'Email' })).toEqual([])
   })
 
   it.each(['button', 'input', 'meter', 'output', 'progress', 'select', 'textarea'])(
     'accepts %s as the labelable control',
     (tag) => {
-      expect(check(labelContract, [el(tag)])).toEqual([])
+      expect(check(labelContract, [el(tag)], { 'aria-label': 'Email' })).toEqual([])
     },
   )
 
@@ -429,14 +439,17 @@ describe('labelContract', () => {
   })
 
   it('does not count input[type="hidden"] as a labelable control', () => {
-    expect(check(labelContract, [elWithProps('input', { type: 'hidden' })])).toEqual([])
+    expect(
+      check(labelContract, [elWithProps('input', { type: 'hidden' })], { 'aria-label': 'Email' }),
+    ).toEqual([])
   })
 
   it('still counts a visible input alongside a hidden one as more than one control', () => {
-    const v = check(labelContract, [
-      elWithProps('input', { type: 'hidden' }),
-      elWithProps('input', { type: 'text' }),
-    ])
+    const v = check(
+      labelContract,
+      [elWithProps('input', { type: 'hidden' }), elWithProps('input', { type: 'text' })],
+      { 'aria-label': 'Email' },
+    )
     expect(v).toEqual([])
   })
 
@@ -481,12 +494,59 @@ describe('labelContract', () => {
   })
 
   it('rejects other interactive content alongside a valid control', () => {
-    const v = check(labelContract, [el('input'), el('a')])
+    const v = check(labelContract, [el('input'), el('a')], { 'aria-label': 'Email' })
     expect(v).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ kind: 'cardinality-max', ruleName: 'other-interactive-content' }),
       ]),
     )
+  })
+
+  describe('accessible name', () => {
+    it('rejects a fully empty label', () => {
+      const v = check(labelContract, [])
+      expect(v).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: 'cardinality-min', ruleName: 'accessible-name' }),
+        ]),
+      )
+    })
+
+    it('rejects a label with only a control and no visible text or aria-label', () => {
+      const v = check(labelContract, [el('input')])
+      expect(v).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: 'cardinality-min', ruleName: 'accessible-name' }),
+        ]),
+      )
+    })
+
+    it('rejects whitespace-only text as an accessible name', () => {
+      const v = check(labelContract, ['  \n  '])
+      expect(v).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: 'cardinality-min', ruleName: 'accessible-name' }),
+        ]),
+      )
+    })
+
+    it('accepts visible text as the accessible name, with no aria-label needed', () => {
+      expect(check(labelContract, ['Email', el('input')])).toEqual([])
+    })
+
+    it('accepts a numeric text child as the accessible name', () => {
+      expect(check(labelContract, [0, el('input')])).toEqual([])
+    })
+
+    it('accepts aria-label with no visible text', () => {
+      expect(check(labelContract, [el('input')], { 'aria-label': 'Email' })).toEqual([])
+    })
+
+    it('accepts aria-labelledby with no visible text', () => {
+      expect(check(labelContract, [el('input')], { 'aria-labelledby': 'email-heading' })).toEqual(
+        [],
+      )
+    })
   })
 })
 

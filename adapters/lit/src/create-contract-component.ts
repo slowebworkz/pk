@@ -177,7 +177,9 @@ export function createContractComponent<
       if (bundle.childrenEvaluator) {
         bundle.childrenEvaluator.evaluate(children, { tag, props: normalizedProps })
       }
-      bundle.runtime.options.htmlChildrenEvaluatorFn?.(tag)?.evaluate(children)
+      bundle.runtime.options
+        .htmlChildrenEvaluatorFn?.(tag)
+        ?.evaluate(children, { tag, props: normalizedProps })
       return html`<slot></slot>`
     }
   }

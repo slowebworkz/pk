@@ -153,7 +153,9 @@ export function render({
 
   if (process.env.NODE_ENV !== 'production') {
     childrenEvaluator?.evaluate(children, { tag: state.tag, props: state.normalizedProps })
-    runtime.options.htmlChildrenEvaluatorFn?.(state.tag)?.evaluate(children)
+    runtime.options
+      .htmlChildrenEvaluatorFn?.(state.tag)
+      ?.evaluate(children, { tag: state.tag, props: state.normalizedProps })
   }
 
   const slotResult = tryRenderAsChild(state, children, discarded, slotValidator)
