@@ -9,6 +9,9 @@ export type AriaFixResult =
 
 export type AriaFix = {
   readonly kind: FixKind
+  /** The attribute a `'removeAttribute'`/`'injectLive'` fix targets — always set for those
+   *  kinds, absent for kinds with no single-attribute target (`'removeRole'`, etc.). */
+  readonly attribute?: string
   readonly priority?: number
   readonly source?: string
   readonly apply: (context: AriaContext) => AriaFixResult

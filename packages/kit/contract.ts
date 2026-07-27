@@ -31,6 +31,12 @@ export {
   selectedContract,
   mergeContracts,
 } from '@praxis-kit/core/contract'
+export {
+  createRemoveAttributeRule,
+  invalidWithFix,
+  invalidWithoutFix,
+  removeAttributeFix,
+} from '@praxis-kit/core/contract'
 export type {
   AriaContext,
   AriaFix,

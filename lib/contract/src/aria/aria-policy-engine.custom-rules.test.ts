@@ -49,7 +49,8 @@ describe('AriaPolicyEngine — custom rules via constructor', () => {
         message: 'remove data-custom',
         fixable: true as const,
         fix: {
-          kind: 'removeAttribute:data-custom' as const,
+          kind: 'removeAttribute' as const,
+          attribute: 'data-custom',
           apply: ({ props }: { props: AnyRecord }) =>
             'data-custom' in props
               ? {
@@ -165,7 +166,8 @@ describe('AriaPolicyEngine — custom rules via constructor', () => {
           message: 'dangerous href stripped',
           fixable: true as const,
           fix: {
-            kind: 'removeAttribute:href' as const,
+            kind: 'removeAttribute' as const,
+            attribute: 'href',
             apply: ({ props }: { props: AnyRecord }) => ({
               applied: true as const,
               next: Object.fromEntries(Object.entries(props).filter(([k]) => k !== 'href')),
@@ -202,7 +204,8 @@ describe('AriaPolicyEngine — custom rules via constructor', () => {
             message: 'dangerous href stripped',
             fixable: true as const,
             fix: {
-              kind: 'removeAttribute:href' as const,
+              kind: 'removeAttribute' as const,
+              attribute: 'href',
               apply: ({ props }: { props: AnyRecord }) => ({
                 applied: true as const,
                 next: Object.fromEntries(Object.entries(props).filter(([k]) => k !== 'href')),
@@ -237,7 +240,8 @@ describe('AriaPolicyEngine — custom rules via constructor', () => {
         message: 'high priority fix',
         fixable: true as const,
         fix: {
-          kind: 'removeAttribute:data-high' as const,
+          kind: 'removeAttribute' as const,
+          attribute: 'data-high',
           priority: 0,
           apply: ({ props }: { props: AnyRecord }) => {
             log.push('high')
@@ -261,7 +265,8 @@ describe('AriaPolicyEngine — custom rules via constructor', () => {
         message: 'low priority fix',
         fixable: true as const,
         fix: {
-          kind: 'removeAttribute:data-low' as const,
+          kind: 'removeAttribute' as const,
+          attribute: 'data-low',
           priority: 10,
           apply: ({ props }: { props: AnyRecord }) => {
             log.push('low')

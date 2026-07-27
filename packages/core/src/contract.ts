@@ -23,6 +23,10 @@ export {
   KNOWN_ARIA_ROLES,
   isKnownAriaRole,
   hasRole,
+  createRemoveAttributeRule,
+  invalidWithFix,
+  invalidWithoutFix,
+  removeAttributeFix,
 } from '@praxis-kit/contract'
 export { createResolverPipeline } from './resolver'
 export type {
