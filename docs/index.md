@@ -13,6 +13,7 @@ Framework-neutral UI infrastructure with enforceable structural and accessibilit
 | [Adapter authoring](../ADAPTER_AUTHORING.md) | Building a new framework adapter                    |
 | [Migration](../MIGRATING.md)                 | Breaking-change migration guide                     |
 | [Changelog](../CHANGELOG.md)                 | Release history                                     |
+| [Design proposals](./design/)                | Unimplemented design docs for larger features       |
 
 ## Layer overview
 
