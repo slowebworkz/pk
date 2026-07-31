@@ -20,9 +20,9 @@ catalog:
   # Playwright
   "@axe-core/playwright": ^4.11.3
   "@eslint/js": ^10.0.0
-  "@playwright/experimental-ct-react": ^1.60.0
-  "@playwright/experimental-ct-vue": ^1.60.0
-  "@playwright/test": ^1.60.0
+  "@playwright/experimental-ct-react": ^1.62.0
+  "@playwright/experimental-ct-vue": ^1.62.0
+  "@playwright/test": ^1.62.0
 
   # Preact
   "@preact/preset-vite": ^2.10.6
@@ -90,8 +90,10 @@ catalog:
 overrides:
   # Floors for Dependabot security advisories (esbuild GHSA dev-server file
   # read; undici SOCKS5/Set-Cookie/cache advisories; @babel/core source-map
-  # file read). Keep >= the patched versions when bumping.
+  # file read; brace-expansion GHSA-mh99-v99m-4gvg unbounded-expansion DoS).
+  # Keep >= the patched versions when bumping.
   "@babel/core": "^7.29.7"
+  "brace-expansion": ">=5.0.8"
   esbuild: ">=0.28.1"
   undici: "^7.28.0"
 
