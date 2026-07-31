@@ -54,6 +54,12 @@ export type FactoryOptions<
    * The factory also derives child enforcement rules from these
    * sub-components, ensuring the compound API and its child contract
    * remain synchronized without duplicating configuration.
+   *
+   * Derived rules stay open by default — matching `contract()` vs.
+   * `closedContract()` in `packages/core/src/html/contracts/helpers.ts` —
+   * so other children remain valid alongside the named sub-components.
+   * Pass `enforcement.exclusiveChildren: true` to close the content model
+   * to only the listed sub-components.
    */
   readonly subComponents?: SubComponentMap
 }

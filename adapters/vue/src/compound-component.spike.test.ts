@@ -56,9 +56,9 @@ describe('subComponents (compound component generation spike)', () => {
     // model — without it, enforcement.children only describes the *named*
     // children, it doesn't reject everything else (matches
     // packages/core/src/html/contracts/helpers.ts's contract() vs
-    // closedContract() distinction). Whether subComponents should imply a
-    // closed model by default is an open design question; left explicit
-    // here rather than assumed.
+    // closedContract() distinction). subComponents intentionally leaves
+    // this opt-in rather than implying a closed model, so callers can still
+    // slot in arbitrary children alongside the named sub-components.
     const Stray = createContractComponent({ tag: 'aside', name: 'Stray' })
     const ClosedCard = createContractComponent({
       tag: 'section',
