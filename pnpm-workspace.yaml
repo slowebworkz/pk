@@ -25,7 +25,7 @@ catalog:
   "@playwright/test": ^1.60.0
 
   # Preact
-  "@preact/preset-vite": ^2.10.5
+  "@preact/preset-vite": ^2.10.6
   "@solidjs/testing-library": ^0.8.0
   "@sveltejs/vite-plugin-svelte": ^7.0.0
   "@testing-library/preact": ^3.2.0
