@@ -58,10 +58,10 @@ const config = [
             'lib/*/eslint.config.ts',
             'plugins/*/eslint.config.ts',
             'adapters/*/eslint.config.ts',
-            // codemod and ts-plugin have rootDir:src — tsup/vitest configs can't be in their tsconfig include
-            'tooling/codemod/tsup.config.ts',
+            // codemod and ts-plugin have rootDir:src — tsdown/vitest configs can't be in their tsconfig include
+            'tooling/codemod/tsdown.config.ts',
             'tooling/codemod/vitest.config.ts',
-            'plugins/typescript/tsup.config.ts',
+            'plugins/typescript/tsdown.config.mts',
             // Playwright CT config and mount entry live outside the react/vue package tsconfig include
             'adapters/react/playwright-ct.config.ts',
             'adapters/react/playwright/index.tsx',

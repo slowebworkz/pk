@@ -9,8 +9,8 @@
     "./testing": "./src/testing/index.ts"
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:related": "vitest run --changed"
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
