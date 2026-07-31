@@ -1,5 +1,11 @@
 import type { Diagnostics } from '@praxis-kit/diagnostics'
-import type { AnyRecord, ElementType, EmptyRecord, IntrinsicProps } from '../primitives'
+import type {
+  AnyRecord,
+  ElementType,
+  EmptyRecord,
+  IntrinsicProps,
+  SubComponentMap,
+} from '../primitives'
 import type { RecipeMap, VariantMap } from '../variants'
 import type { AnyClassPluginFactory } from '../class'
 import type { EnforcementOptions } from './enforcement-options'
@@ -40,4 +46,14 @@ export type FactoryOptions<
    * be set directly by component authors — use `enforcement.diagnostics` to override per component.
    */
   readonly diagnostics?: Diagnostics
+  /**
+   * Sub-components to attach to the generated root component, producing a
+   * compound component API (for example, `Card.Header`, `Card.Content`,
+   * and `Card.Footer`).
+   *
+   * The factory also derives child enforcement rules from these
+   * sub-components, ensuring the compound API and its child contract
+   * remain synchronized without duplicating configuration.
+   */
+  readonly subComponents?: SubComponentMap
 }

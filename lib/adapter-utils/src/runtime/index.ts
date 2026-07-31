@@ -1,5 +1,7 @@
 export { applyDisplayName } from './apply-display-name'
 export { defineContractComponent } from './define-component'
+export { assembleCompoundComponent } from './assemble-compound-component'
+export { resolveSubComponentOptions } from './resolve-sub-component-options'
 export { buildCoreRuntime } from './build-core-runtime'
 export { buildEngines } from './build-engines'
 export type { RuntimeEngines } from './build-engines'

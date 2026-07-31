@@ -60,3 +60,18 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
   }
   displayName?: string
 }
+
+/**
+ * A `PolymorphicComponent<G>` with named sub-components attached, e.g.
+ * `Card.Header`/`Card.Content`/`Card.Footer`.
+ *
+ * Intersecting named properties onto `PolymorphicComponent<G>`'s `new()`
+ * constructor signature doesn't disturb it — `Card.Header` and friends are
+ * ordinary object properties, not part of the construct signature.
+ */
+export type CompoundComponent<
+  G extends PolymorphicGenerics,
+  S extends Readonly<Record<string, PolymorphicGenerics>>,
+> = PolymorphicComponent<G> & {
+  readonly [K in keyof S]: PolymorphicComponent<S[K]>
+}

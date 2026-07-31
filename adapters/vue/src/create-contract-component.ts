@@ -9,6 +9,7 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { COMPONENT_DEFAULT_TAG } from '@praxis-kit/primitive'
+import { assembleCompoundComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
 import { applyDisplayName } from './apply-display-name'
 import { buildRuntime } from './build-runtime'
 import { prepareRenderState, render } from './render'
@@ -21,8 +22,16 @@ export function createContractComponent<
   Variants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
   TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
->(options: VueFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin>) {
-  const bundle = buildRuntime(options as VueFactoryOptions<TDefault, Props, Variants, TPreset>)
+  TSubComponents extends Readonly<Record<string, unknown>> = EmptyRecord,
+>(
+  options: VueFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> & {
+    readonly subComponents?: TSubComponents
+  },
+) {
+  const runtimeOptions = resolveSubComponentOptions(options)
+  const bundle = buildRuntime(
+    runtimeOptions as VueFactoryOptions<TDefault, Props, Variants, TPreset>,
+  )
 
   const Component = defineComponent({
     // normalizeOptions always supplies `name`, so displayName is always defined here —
@@ -45,7 +54,10 @@ export function createContractComponent<
     Object.assign(Component, { [COMPONENT_DEFAULT_TAG]: defaultTag })
   }
 
-  return Component as unknown as PolymorphicComponent<
+  const assembled = assembleCompoundComponent(Component, options.subComponents)
+
+  return assembled as unknown as PolymorphicComponent<
     PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
-  >
+  > &
+    TSubComponents
 }

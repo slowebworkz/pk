@@ -8,6 +8,7 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { COMPONENT_DEFAULT_TAG } from '@praxis-kit/primitive'
+import { assembleCompoundComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
 import type { Ref } from 'react'
 import type { PolymorphicComponent, ReactFactoryOptions, UnknownProps } from '../shared'
 import { applyDisplayName, render } from '../shared'
@@ -20,8 +21,16 @@ export function createContractComponent<
   TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends ElementType = ElementType,
->(options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed>) {
-  const bundle = buildRuntime(options as ReactFactoryOptions<TDefault, Props, Variants, TPreset>)
+  TSubComponents extends Readonly<Record<string, unknown>> = EmptyRecord,
+>(
+  options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed> & {
+    readonly subComponents?: TSubComponents
+  },
+) {
+  const runtimeOptions = resolveSubComponentOptions(options)
+  const bundle = buildRuntime(
+    runtimeOptions as ReactFactoryOptions<TDefault, Props, Variants, TPreset>,
+  )
 
   function Component({ ref, ...props }: UnknownProps & { ref?: Ref<unknown> }) {
     return render({ ...bundle, props, ref: ref ?? null })
@@ -33,7 +42,10 @@ export function createContractComponent<
     Object.assign(Component, { [COMPONENT_DEFAULT_TAG]: defaultTag })
   }
 
-  return Component as unknown as PolymorphicComponent<
+  const assembled = assembleCompoundComponent(Component, options.subComponents)
+
+  return assembled as unknown as PolymorphicComponent<
     PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset, TAllowed>
-  >
+  > &
+    TSubComponents
 }

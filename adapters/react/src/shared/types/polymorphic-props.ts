@@ -205,3 +205,20 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
 
   displayName?: string
 }
+
+/**
+ * A `PolymorphicComponent<G>` with named sub-components attached, e.g.
+ * `Card.Header`/`Card.Content`/`Card.Footer`.
+ *
+ * Intersecting named properties onto `PolymorphicComponent<G>` doesn't
+ * disturb its call signatures, so `React.ComponentProps<typeof Card>`
+ * extraction keeps resolving the root's own props exactly as it does for a
+ * plain `PolymorphicComponent<G>` — `Card.Header` and friends are ordinary
+ * object properties, not additional call signatures.
+ */
+export type CompoundComponent<
+  G extends PolymorphicGenerics,
+  S extends Readonly<Record<string, PolymorphicGenerics>>,
+> = PolymorphicComponent<G> & {
+  readonly [K in keyof S]: PolymorphicComponent<S[K]>
+}

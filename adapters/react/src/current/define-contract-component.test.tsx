@@ -19,7 +19,12 @@ describe('defineContractComponent — React integration', () => {
 
     const Box = createBox(createContractComponent)
 
-    type Expected = PolymorphicComponent<PolymorphicGenerics<'div', EmptyRecord, typeof variants>>
+    // SPIKE (finding #22): createContractComponent's return type is now
+    // `PolymorphicComponent<G> & TSubComponents`, defaulting TSubComponents
+    // to EmptyRecord when no subComponents option is passed — structurally
+    // a no-op, but expectTypeOf's strict equality sees the intersection.
+    type Expected = PolymorphicComponent<PolymorphicGenerics<'div', EmptyRecord, typeof variants>> &
+      EmptyRecord
     expectTypeOf(Box).toEqualTypeOf({} as Expected)
   })
 
@@ -29,7 +34,8 @@ describe('defineContractComponent — React integration', () => {
 
     type Expected = PolymorphicComponent<
       PolymorphicGenerics<'a', EmptyRecord, Readonly<EmptyRecord>>
-    >
+    > &
+      EmptyRecord
     expectTypeOf(Link).toEqualTypeOf({} as Expected)
   })
 
@@ -45,7 +51,8 @@ describe('defineContractComponent — React integration', () => {
 
     type Expected = PolymorphicComponent<
       PolymorphicGenerics<'button', EmptyRecord, typeof variants>
-    >
+    > &
+      EmptyRecord
     expectTypeOf(ButtonA).toEqualTypeOf({} as Expected)
     expectTypeOf(ButtonB).toEqualTypeOf({} as Expected)
   })
