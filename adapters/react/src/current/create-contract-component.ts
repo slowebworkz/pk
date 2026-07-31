@@ -7,8 +7,7 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { COMPONENT_DEFAULT_TAG } from '@praxis-kit/primitive'
-import { assembleCompoundComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
 import type { Ref } from 'react'
 import type { PolymorphicComponent, ReactFactoryOptions, UnknownProps } from '../shared'
 import { applyDisplayName, render } from '../shared'
@@ -37,12 +36,11 @@ export function createContractComponent<
   }
 
   applyDisplayName(Component, options.name)
-  const defaultTag = bundle.runtime.options.defaultTag
-  if (typeof defaultTag === 'string') {
-    Object.assign(Component, { [COMPONENT_DEFAULT_TAG]: defaultTag })
-  }
-
-  const assembled = assembleCompoundComponent(Component, options.subComponents)
+  const assembled = finalizeComponent(
+    Component,
+    bundle.runtime.options.defaultTag,
+    options.subComponents,
+  )
 
   return assembled as unknown as PolymorphicComponent<
     PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset, TAllowed>

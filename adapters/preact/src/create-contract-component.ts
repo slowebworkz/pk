@@ -1,5 +1,6 @@
 import type {
   AnyClassPluginFactory,
+  AnyRecord,
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
@@ -7,7 +8,7 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { COMPONENT_DEFAULT_TAG } from '@praxis-kit/primitive'
+import { finalizeComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
 import { forwardRef } from 'preact/compat'
 import type { ForwardedRef } from 'preact/compat'
 import { applyDisplayName } from './apply-display-name'
@@ -22,8 +23,16 @@ export function createContractComponent<
   Variants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
   TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
->(options: PreactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin>) {
-  const bundle = buildRuntime(options as PreactFactoryOptions<TDefault, Props, Variants, TPreset>)
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
+>(
+  options: PreactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> & {
+    readonly subComponents?: TSubComponents
+  },
+) {
+  const runtimeOptions = resolveSubComponentOptions(options)
+  const bundle = buildRuntime(
+    runtimeOptions as PreactFactoryOptions<TDefault, Props, Variants, TPreset>,
+  )
 
   const Component = forwardRef(function Component(
     props: UnknownProps,
@@ -33,12 +42,14 @@ export function createContractComponent<
   })
 
   applyDisplayName(Component, options.name)
-  const defaultTag = bundle.runtime.options.defaultTag
-  if (typeof defaultTag === 'string') {
-    Object.assign(Component, { [COMPONENT_DEFAULT_TAG]: defaultTag })
-  }
+  const assembled = finalizeComponent(
+    Component,
+    bundle.runtime.options.defaultTag,
+    options.subComponents,
+  )
 
-  return Component as unknown as PolymorphicComponent<
+  return assembled as unknown as PolymorphicComponent<
     PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
-  >
+  > &
+    TSubComponents
 }

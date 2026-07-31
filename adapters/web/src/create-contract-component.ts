@@ -1,12 +1,19 @@
 import type {
   AnyClassPluginFactory,
+  AnyRecord,
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { diffAndApplyAttributes, resolveHostState, toLooseBundle } from '@praxis-kit/adapter-utils'
+import {
+  assembleCompoundComponent,
+  diffAndApplyAttributes,
+  resolveHostState,
+  resolveSubComponentOptions,
+  toLooseBundle,
+} from '@praxis-kit/adapter-utils'
 import { buildRuntime } from './build-runtime'
 import { registerForSsr } from './render-to-string'
 import type { WebContractComponent, WebFactoryOptions, UnknownProps } from './types/index'
@@ -44,10 +51,16 @@ export function createContractComponent<
   TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
   TPreset extends RecipeMap<TVariants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
 >(
-  options: WebFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin>,
-): WebContractComponent<TVariants, ExtractPluginProps<TPlugin>> {
-  const bundle = buildRuntime(options as WebFactoryOptions<TDefault, TProps, TVariants, TPreset>)
+  options: WebFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin> & {
+    readonly subComponents?: TSubComponents
+  },
+): WebContractComponent<TVariants, ExtractPluginProps<TPlugin>> & TSubComponents {
+  const runtimeOptions = resolveSubComponentOptions(options)
+  const bundle = buildRuntime(
+    runtimeOptions as WebFactoryOptions<TDefault, TProps, TVariants, TPreset>,
+  )
   const looseBundle = toLooseBundle(bundle)
 
   const variantKeys = options.styling?.variants ? Object.keys(options.styling.variants) : []
@@ -162,8 +175,8 @@ export function createContractComponent<
 
   registerForSsr(PolymorphicWebElement as unknown as WebContractComponent, looseBundle)
 
-  return PolymorphicWebElement as unknown as WebContractComponent<
-    TVariants,
-    ExtractPluginProps<TPlugin>
-  >
+  const assembled = assembleCompoundComponent(PolymorphicWebElement, options.subComponents)
+
+  return assembled as unknown as WebContractComponent<TVariants, ExtractPluginProps<TPlugin>> &
+    TSubComponents
 }

@@ -1,6 +1,8 @@
 import {
+  assembleCompoundComponent,
   diffAndApplyAttributes,
   resolveHostState,
+  resolveSubComponentOptions,
   resolveTagAndNormalizedProps,
   toLooseBundle,
 } from '@praxis-kit/adapter-utils'
@@ -13,6 +15,7 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { iterate } from '@praxis-kit/primitive'
+import type { AnyRecord } from '@praxis-kit/core'
 import { LitElement, html } from 'lit'
 import { buildRuntime } from './build-runtime'
 import { registerForSsr } from './render-to-string'
@@ -44,10 +47,16 @@ export function createContractComponent<
   TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
   TPreset extends RecipeMap<TVariants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
 >(
-  options: LitFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin>,
-): LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> {
-  const bundle = buildRuntime(options as LitFactoryOptions<TDefault, TProps, TVariants, TPreset>)
+  options: LitFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin> & {
+    readonly subComponents?: TSubComponents
+  },
+): LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> & TSubComponents {
+  const runtimeOptions = resolveSubComponentOptions(options)
+  const bundle = buildRuntime(
+    runtimeOptions as LitFactoryOptions<TDefault, TProps, TVariants, TPreset>,
+  )
   const looseBundle = toLooseBundle(bundle)
 
   const variantKeys = options.styling?.variants ? Object.keys(options.styling.variants) : []
@@ -191,10 +200,10 @@ export function createContractComponent<
   // Register for SSR before returning — renderToString looks up the bundle via WeakMap.
   registerForSsr(PolymorphicLitElement as unknown as LitContractComponent, looseBundle)
 
+  const assembled = assembleCompoundComponent(PolymorphicLitElement, options.subComponents)
+
   // Variant key properties are installed by Lit's finalize() at runtime, not
   // statically declared — cast to the exported contract type here at the boundary.
-  return PolymorphicLitElement as unknown as LitContractComponent<
-    TVariants,
-    ExtractPluginProps<TPlugin>
-  >
+  return assembled as unknown as LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> &
+    TSubComponents
 }

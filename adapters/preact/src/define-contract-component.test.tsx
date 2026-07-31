@@ -19,7 +19,8 @@ describe('defineContractComponent — Preact integration', () => {
 
     const Box = defineContractComponent(options)(createContractComponent)
 
-    type Expected = PolymorphicComponent<PolymorphicGenerics<'div', EmptyRecord, typeof variants>>
+    type Expected = PolymorphicComponent<PolymorphicGenerics<'div', EmptyRecord, typeof variants>> &
+      EmptyRecord
     expectTypeOf(Box).toEqualTypeOf({} as Expected)
   })
 
@@ -29,7 +30,8 @@ describe('defineContractComponent — Preact integration', () => {
 
     type Expected = PolymorphicComponent<
       PolymorphicGenerics<'a', EmptyRecord, Readonly<EmptyRecord>>
-    >
+    > &
+      EmptyRecord
     expectTypeOf(Link).toEqualTypeOf({} as Expected)
   })
 
@@ -46,7 +48,8 @@ describe('defineContractComponent — Preact integration', () => {
 
     type Expected = PolymorphicComponent<
       PolymorphicGenerics<'button', EmptyRecord, typeof variants>
-    >
+    > &
+      EmptyRecord
     expectTypeOf(ButtonA).toEqualTypeOf({} as Expected)
     expectTypeOf(ButtonB).toEqualTypeOf({} as Expected)
   })
