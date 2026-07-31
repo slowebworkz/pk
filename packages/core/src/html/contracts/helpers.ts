@@ -91,5 +91,5 @@ export function getChildProp(child: unknown, key: PropertyKey): unknown {
   if (!isVNodeLike(child)) return undefined
   const { props } = child
   if (!isObject(props)) return undefined
-  return (props as Record<PropertyKey, unknown>)[key]
+  return Reflect.get(props, key)
 }
