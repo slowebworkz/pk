@@ -14,8 +14,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "lint": "eslint . --fix --config eslint.config.ts",
     "lint:check": "eslint . --config eslint.config.ts",
     "typecheck": "tsc --noEmit",
@@ -35,7 +35,7 @@
     "@praxis-kit/pipeline": "workspace:*",
     "@typescript-eslint/rule-tester": "catalog:",
     "eslint": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
