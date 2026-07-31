@@ -15,7 +15,7 @@ allowBuilds:
 
 catalog:
   # Core
-  "@ast-grep/cli": ^0.44.1
+  "@ast-grep/cli": ^0.45.0
 
   # Playwright
   "@axe-core/playwright": ^4.11.3
