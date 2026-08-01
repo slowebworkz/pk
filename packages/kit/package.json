@@ -1,6 +1,6 @@
 {
   "name": "praxis-kit",
-  "version": "7.0.0",
+  "version": "7.3.0",
   "type": "module",
   "exports": {
     "./react": {
