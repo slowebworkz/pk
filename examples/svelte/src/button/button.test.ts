@@ -54,6 +54,11 @@ describe('Button — filterProps', () => {
     expect((container.querySelector('button') as HTMLButtonElement).disabled).toBe(true)
   })
 
+  it('does not set loading as a DOM attribute', () => {
+    const { container } = render(Button, { props: { loading: true } })
+    expect(container.querySelector('button')!.hasAttribute('loading')).toBe(false)
+  })
+
   it('fires onclick', () => {
     let clicked = false
     const { container } = render(Button, {

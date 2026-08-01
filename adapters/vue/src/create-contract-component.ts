@@ -35,6 +35,7 @@ export function createContractComponent<
   TSubComponents {
   invariant(isVueFactoryOptions(options), 'options is not a valid VueFactoryOptions object')
   const bundle = buildRuntime(options)
+  const { onElement } = options
 
   const Component = defineComponent({
     // normalizeOptions always supplies `name`, so displayName is always defined here —
@@ -42,12 +43,38 @@ export function createContractComponent<
     name: bundle.runtime.options.displayName ?? 'PolymorphicComponent',
     inheritAttrs: false,
     setup(_, { attrs, slots }) {
-      // Wrap pure prop resolution in computed() so Vue's reactivity skips it when attrs unchanged.
+      // Cache derived render state using Vue's dependency tracking so prop resolution only
+      // recomputes when attrs change.
       const state = computed(() =>
         prepareRenderState(bundle.runtime, attrs as KnownProps, bundle.filterProps),
       )
 
-      return () => render({ ...bundle, state: state.value, slots })
+      // setup() runs once per component instance, so this callback remains stable across
+      // every render.
+      //
+      // Vue invokes function refs with the element on mount and `null` on unmount, matching
+      // the callback-ref contract used by the React and Preact adapters. `attrs` is reactive,
+      // so getProps() always observes current values. Vue re-invokes a vnode's function-ref on
+      // every patch of that vnode, not just genuine mount/unmount — track the currently-bound
+      // element so a same-element re-invocation (e.g. from an unrelated prop change) is a no-op
+      // rather than tearing down and re-registering.
+      let cleanup: (() => void) | undefined
+      let boundElement: Element | null = null
+      const onElementRef = onElement
+        ? (element: Element | null) => {
+            if (element === boundElement) return
+            if (boundElement) {
+              cleanup?.()
+              cleanup = undefined
+            }
+            boundElement = element
+            if (element) {
+              cleanup = onElement(element, () => attrs as unknown as Readonly<Props>) ?? undefined
+            }
+          }
+        : undefined
+
+      return () => render({ ...bundle, state: state.value, slots, elementRef: onElementRef })
     },
   })
 

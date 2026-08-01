@@ -3,7 +3,7 @@ import type { ElementType } from '@praxis-kit/core'
 import { enforceAllowedAs, isKnownAriaRole } from '@praxis-kit/core'
 import type { AnyRecord } from '@praxis-kit/primitive'
 import { isNumber, isString } from '@praxis-kit/primitive'
-import type { Slots, VNode } from 'vue'
+import type { Slots, VNode, VNodeRef } from 'vue'
 import { cloneVNode, h } from 'vue'
 import { normalizeChildren } from './normalize-children'
 import type { SlotValidator } from './slot'
@@ -86,7 +86,11 @@ export function prepareRenderState(
   }
 }
 
-function buildElementProps(props: AnyRecord, className: string | undefined): AnyRecord {
+function buildElementProps(
+  props: AnyRecord,
+  className: string | undefined,
+  elementRef: ((element: Element | null) => void) | undefined,
+): AnyRecord {
   const { role, ...rest } = props
   return {
     ...normalizeListenerKeys(rest),
@@ -95,11 +99,22 @@ function buildElementProps(props: AnyRecord, className: string | undefined): Any
     // removes the attribute outright. Omitting the key entirely keeps both paths consistent.
     ...(className !== undefined && { class: className }),
     ...(isKnownAriaRole(role) && { role }),
+    // Vue calls a function-ref with the element on mount and with null on unmount, same
+    // contract as React/Preact's callback refs — a natural fit for FactoryOptions.onElement.
+    // Cast: Vue's own VNodeRef type also accepts a resolved *component* instance, since refs
+    // can target components as well as elements — irrelevant here, this is only ever attached
+    // to an intrinsic host tag, which always resolves to a real Element.
+    ...(elementRef !== undefined && { ref: elementRef as unknown as VNodeRef }),
   }
 }
 
-function renderIntrinsic(state: ResolvedRenderState, runtime: Runtime, slots: Slots): VNode {
-  const elementProps = buildElementProps(state.props, state.className)
+function renderIntrinsic(
+  state: ResolvedRenderState,
+  runtime: Runtime,
+  slots: Slots,
+  elementRef: ((element: Element | null) => void) | undefined,
+): VNode {
+  const elementProps = buildElementProps(state.props, state.className, elementRef)
   const domProps = runtime.resolveAria(state.tag as string, elementProps).props
   return h(state.tag, domProps, slots.default ? { default: slots.default } : undefined)
 }
@@ -120,6 +135,7 @@ function tryRenderAsChild(
   children: VNode[],
   discarded: number,
   validator: SlotValidator,
+  elementRef: ((element: Element | null) => void) | undefined,
 ): VNode | null {
   if (!validateSlotDirectives(state.directives, validator)) return null
 
@@ -128,6 +144,7 @@ function tryRenderAsChild(
   const attrs = {
     ...pickAttributes(state.props),
     ...(state.className !== undefined && { class: state.className }),
+    ...(elementRef !== undefined && { ref: elementRef as unknown as VNodeRef }),
   }
 
   const slottable = extractSlottable(children)
@@ -148,6 +165,7 @@ export function render({
   slots,
   slotValidator,
   childrenEvaluator,
+  elementRef,
 }: RenderInput): VNode {
   const { vnodes: children, discarded } = normalizeChildren(slots)
 
@@ -158,6 +176,6 @@ export function render({
       ?.evaluate(children, { tag: state.tag, props: state.normalizedProps })
   }
 
-  const slotResult = tryRenderAsChild(state, children, discarded, slotValidator)
-  return slotResult ?? renderIntrinsic(state, runtime, slots)
+  const slotResult = tryRenderAsChild(state, children, discarded, slotValidator, elementRef)
+  return slotResult ?? renderIntrinsic(state, runtime, slots, elementRef)
 }

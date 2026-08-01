@@ -98,8 +98,24 @@ export function createContractComponent<
       return observedAttrNames
     }
 
+    // Tag registered by the consumer's own customElements.define() call is never literally
+    // `dialog` (custom-element names must be hyphenated), so native `<dialog>`-specific methods
+    // like showModal() won't exist on this class unless the consumer opts into "customized
+    // built-ins" (`{ extends: 'dialog' }`) themselves — not something this adapter special-cases.
+    private _onElementCleanup: (() => void) | undefined
+
     connectedCallback(): void {
       this._applyPraxis()
+      if (options.onElement) {
+        this._onElementCleanup =
+          options.onElement(this, () => this._buildProps() as unknown as Readonly<TProps>) ??
+          undefined
+      }
+    }
+
+    disconnectedCallback(): void {
+      this._onElementCleanup?.()
+      this._onElementCleanup = undefined
     }
 
     // Fires synchronously for every observed attribute change — no microtask
@@ -120,12 +136,11 @@ export function createContractComponent<
       return this as unknown as InstanceProps
     }
 
-    private _applyPraxis(): void {
+    // Shared by _applyPraxis and the onElement getProps accessor — both need the same
+    // attribute-derived prop snapshot, just for different purposes (pipeline input vs.
+    // exposing "current props" to author-supplied element wiring).
+    private _buildProps(): UnknownProps {
       const self = this._self
-      const {
-        childrenEvaluator,
-        runtime: { options },
-      } = bundle
 
       // Skip 'class' (pipeline output) and all observedAttributes. Observed attrs
       // are either read as camelCase below (variant keys, as, praxis-class) or
@@ -154,7 +169,15 @@ export function createContractComponent<
         const val = self[key as Extract<keyof TVariants, string>] ?? this.getAttribute(key)
         if (val != null) props[key] = val
       }
+      return props
+    }
 
+    private _applyPraxis(): void {
+      const {
+        childrenEvaluator,
+        runtime: { options },
+      } = bundle
+      const props = this._buildProps()
       const hostState = resolveHostState(looseBundle, props)
       const children = Array.from(this.childNodes)
 

@@ -54,4 +54,20 @@ export type FactoryOptions<
    * needs to validate its children.
    */
   readonly subComponents?: SubComponentMap
+  /**
+   * Called once per instance, when the real underlying DOM element first
+   * exists, in every adapter — via that adapter's own native mount
+   * lifecycle, never through the props/attribute pipeline. Use this for
+   * wiring that needs the actual element (native imperative methods like
+   * `dialogEl.showModal()`, native events like `close`/`cancel` that have
+   * no prop-based equivalent), not for anything expressible as a plain
+   * prop.
+   *
+   * `getProps` returns the instance's *current* resolved props at call
+   * time — read it from inside a listener registered once at mount, rather
+   * than re-subscribing on every prop change.
+   *
+   * Return a cleanup function to run when the instance unmounts.
+   */
+  readonly onElement?: (element: Element, getProps: () => Readonly<Props>) => void | (() => void)
 }

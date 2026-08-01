@@ -9,6 +9,7 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { finalizeComponent, invariant } from '@praxis-kit/adapter-utils'
+import { mergeProps, onCleanup } from 'solid-js'
 import { applyDisplayName } from './apply-display-name'
 import { buildRuntime } from './build-runtime'
 import { isPolymorphicComponent } from './is-polymorphic-component'
@@ -43,11 +44,28 @@ export function createContractComponent<
   // ever check this gap — it needs an assertion the same way buildRuntime's
   // TPlugin elision does in every other adapter.
   const bundle = buildRuntime(options as SolidFactoryOptions<TDefault, Props, Variants, TPreset>)
+  const { onElement } = options
 
   const Component = (props: UnknownProps): SolidElement => {
+    // Solid ref callbacks fire once, at element creation — a natural fit for "mount". They
+    // don't fire again with null on unmount (unlike React), so cleanup is registered via
+    // Solid's own onCleanup instead of a second ref invocation.
+    const propsWithRef = onElement
+      ? mergeProps(props, {
+          get ref() {
+            const consumerRef = (props as { ref?: unknown }).ref
+            return (el: Element) => {
+              if (typeof consumerRef === 'function') (consumerRef as (e: Element) => void)(el)
+              const cleanup = onElement(el, () => props as unknown as Readonly<Props>)
+              if (cleanup) onCleanup(cleanup)
+            }
+          },
+        })
+      : props
+
     return render({
       ...bundle,
-      props: props as KnownProps,
+      props: propsWithRef as KnownProps,
     })
   }
 

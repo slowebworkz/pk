@@ -134,6 +134,18 @@
         ?.(tag)
         ?.evaluate(childArray, { tag, props: normalizedProps })
     })
+
+    const onElement = $derived(bundle.onElement)
+
+    // Unlike the effect above, this runs in every environment (not dev-only) — onElement is a
+    // real runtime feature, not a diagnostic. Re-runs (cleaning up the previous call first, via
+    // the returned teardown) whenever hostEl changes identity, e.g. the resolved tag changes and
+    // Svelte mounts a new host element.
+    $effect(() => {
+      if (!hostEl) return
+      const cleanup = onElement?.(hostEl, () => normalizedProps)
+      return () => cleanup?.()
+    })
   }
 </script>
 

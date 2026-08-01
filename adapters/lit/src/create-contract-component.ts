@@ -180,6 +180,26 @@ export function createContractComponent<
       diffAndApplyAttributes(this, resolveHostState(looseBundle, props), this._pipelineAttrs, props)
     }
 
+    // Light DOM means `this` already is the real host element — no ref/indirection needed.
+    // connectedCallback/disconnectedCallback are the native mount/unmount lifecycle, called
+    // once per instance regardless of how many pipeline re-runs `_applyPraxis` does.
+    private _onElementCleanup: (() => void) | undefined
+
+    override connectedCallback() {
+      super.connectedCallback()
+      if (options.onElement) {
+        this._onElementCleanup =
+          options.onElement(this, () => this._buildProps() as unknown as Readonly<TProps>) ??
+          undefined
+      }
+    }
+
+    override disconnectedCallback() {
+      super.disconnectedCallback()
+      this._onElementCleanup?.()
+      this._onElementCleanup = undefined
+    }
+
     override render() {
       const children = Array.from(this.childNodes)
       const { tag, normalizedProps } = resolveTagAndNormalizedProps(looseBundle, this._buildProps())

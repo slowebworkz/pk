@@ -24,5 +24,6 @@ export const buttonBundle = createContractComponent({
       subtle: { intent: 'ghost', size: 'sm' },
     },
   },
-  filterProps: (key: string, variantKeys: ReadonlySet<string>) => variantKeys.has(key),
+  filterProps: (key: string, variantKeys: ReadonlySet<string>) =>
+    variantKeys.has(key) || key === 'loading',
 })

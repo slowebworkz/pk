@@ -1,4 +1,4 @@
-import type { ChildrenEvaluator, PolymorphicGenerics } from '@praxis-kit/core'
+import type { ChildrenEvaluator, PolymorphicGenerics, PropsOf } from '@praxis-kit/core'
 import type {
   BuiltChildrenEvaluator,
   SlotValidator,
@@ -9,6 +9,11 @@ import type { Runtime, TypedRuntime } from './runtime'
 
 export type { WithChildRules, BuiltChildrenEvaluator }
 
+export type OnElementFn<Props = unknown> = (
+  element: Element,
+  getProps: () => Readonly<Props>,
+) => void | (() => void)
+
 export type BuiltRuntime<
   G extends PolymorphicGenerics = PolymorphicGenerics,
   TOptions extends WithChildRules = WithChildRules,
@@ -16,6 +21,7 @@ export type BuiltRuntime<
   runtime: TypedRuntime<G>
   filterProps: FilterPredicate
   slotValidator: SlotValidator
+  onElement?: OnElementFn<PropsOf<G>>
 }
 
 // Structural alias used when generic precision is not needed (e.g. as a prop type).
@@ -27,4 +33,5 @@ export type AnyBuiltRuntime = {
   filterProps: FilterPredicate
   slotValidator: SlotValidator
   childrenEvaluator?: ChildrenEvaluator
+  onElement?: OnElementFn
 }
