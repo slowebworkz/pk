@@ -35,11 +35,21 @@ export type FactoryOptions<
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends ElementType = ElementType,
 > = {
+  /** The intrinsic tag the component renders by default. Overridable per instance via `as`. */
   readonly tag?: TDefault
+  /** Display name used in diagnostics, dev tools, and generated component naming. */
   readonly name?: string
+  /** Values used for the component's own (non-variant) props when the consumer omits them. */
   readonly defaults?: Partial<NoInfer<Props>>
+  /**
+   * A pure `(props) => props` transform run on every render, after `enforcement.props`'s
+   * normalizers see the same input. Use this for component-specific prop shaping — anything
+   * that depends on live instance state or the real DOM element belongs in `onElement` instead.
+   */
   readonly normalize?: NormalizeFn<NoInfer<Props>>
+  /** Variant groups, base classes, presets, and the optional class-resolution plugin. */
   readonly styling?: StylingOptions<V, TPreset, TPlugin>
+  /** ARIA rules, child-content contracts, and other runtime validation for this component. */
   readonly enforcement?: EnforcementOptions<TAllowed>
   /**
    * Adapter-resolved diagnostics default, spread in by `resolveAdapterCommonOptions`. Not meant to

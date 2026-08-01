@@ -14,13 +14,40 @@ import type { SvelteFactoryOptions } from './svelte-options'
 import type { BuiltRuntime, WithChildRules } from './types/built-runtime'
 import type { UnknownProps } from './types'
 
-// Unlike the React/Solid/Preact adapters, createContractComponent in Svelte
-// returns a BuiltRuntime bundle rather than a component function. Svelte
-// components must come from .svelte files (compile-time constraint); the bundle
-// is passed as the `bundle` prop to <Polymorphic> from Polymorphic.svelte.
-// subComponents attach onto that bundle the same way — Object.assign works
-// identically on a plain bundle object as on a component function/class, so
-// `Card.Header` is itself just another bundle passed to `<Polymorphic bundle={Card.Header}>`.
+/**
+ * Creates a praxis-kit contract bundle for use with Svelte's `<Polymorphic>` component.
+ *
+ * Unlike the other adapters, this returns a plain bundle object rather than a component —
+ * Svelte components must come from `.svelte` files, a compile-time constraint — so the bundle
+ * is passed as the `bundle` prop:
+ *
+ * ```ts
+ * // button.ts
+ * export const buttonBundle = createContractComponent({
+ *   tag: 'button',
+ *   name: 'Button',
+ *   styling: {
+ *     base: 'btn',
+ *     variants: { intent: { primary: 'btn--primary', ghost: 'btn--ghost' } },
+ *     defaults: { intent: 'primary' },
+ *   },
+ * })
+ * ```
+ *
+ * ```svelte
+ * <!-- Button.svelte -->
+ * <script lang="ts">
+ *   import Polymorphic from 'praxis-kit/svelte/Polymorphic.svelte'
+ *   import { buttonBundle } from './button'
+ * </script>
+ * <Polymorphic bundle={buttonBundle} intent="ghost" as="a" href="/home">Home</Polymorphic>
+ * ```
+ *
+ * Pass `subComponents` to attach named sub-components (`Card.Header`) — `Object.assign` works
+ * the same way on a plain bundle as on a component function/class, so `Card.Header` is itself
+ * just another bundle, passed to its own `<Polymorphic bundle={Card.Header}>`. Pass `onElement`
+ * to run setup once the real DOM element exists.
+ */
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,

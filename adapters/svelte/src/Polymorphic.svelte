@@ -1,3 +1,16 @@
+<!--
+  @component
+  Renders a `createContractComponent` bundle. Every praxis-kit component in the Svelte adapter
+  is a bundle passed to this component via the `bundle` prop:
+
+  ```svelte
+  <Polymorphic {bundle} intent="ghost" as="a" href="/home">Home</Polymorphic>
+  ```
+
+  Resolves the tag (`as` or the bundle's default), variant classes, filtered props, and ARIA
+  attributes, then renders the result via `<svelte:element>` — or, with `asChild`, renders
+  `children` as a snippet receiving the resolved props instead of a host element.
+-->
 <script module lang="ts">
   declare const process: { env: { NODE_ENV: string } }
 </script>

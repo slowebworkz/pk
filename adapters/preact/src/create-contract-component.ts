@@ -21,6 +21,27 @@ import { isPreactFactoryOptions } from './to-preact-factory-options'
 import type { AnyVNode, PolymorphicComponent, UnknownProps } from './types'
 import type { PreactFactoryOptions } from './preact-options'
 
+/**
+ * Creates a polymorphic Preact component with praxis-kit contracts applied.
+ *
+ * ```tsx
+ * const Button = createContractComponent({
+ *   tag: 'button',
+ *   name: 'Button',
+ *   styling: {
+ *     base: 'btn',
+ *     variants: { intent: { primary: 'btn--primary', ghost: 'btn--ghost' } },
+ *     defaults: { intent: 'primary' },
+ *   },
+ * })
+ *
+ * <Button intent="ghost" as="a" href="/home">Home</Button>
+ * ```
+ *
+ * Returns a `forwardRef` component — `ref` is forwarded to the rendered host element. Pass
+ * `subComponents` to attach named sub-components (`Card.Header`) and `onElement` to run setup
+ * once the real DOM element exists.
+ */
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,

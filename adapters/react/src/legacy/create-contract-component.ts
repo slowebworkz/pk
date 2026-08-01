@@ -14,6 +14,28 @@ import type { PolymorphicComponent, ReactFactoryOptions, UnknownProps } from '..
 import { applyDisplayName, mergeRefs, render } from '../shared'
 import { buildRuntime } from './build-runtime'
 
+/**
+ * Creates a polymorphic React component with praxis-kit contracts applied, for React 18 and
+ * earlier (use `praxis-kit/react` instead on React 19, which accepts `ref` as a plain prop).
+ *
+ * ```tsx
+ * const Button = createContractComponent({
+ *   tag: 'button',
+ *   name: 'Button',
+ *   styling: {
+ *     base: 'btn',
+ *     variants: { intent: { primary: 'btn--primary', ghost: 'btn--ghost' } },
+ *     defaults: { intent: 'primary' },
+ *   },
+ * })
+ *
+ * <Button intent="ghost" as="a" href="/home">Home</Button>
+ * ```
+ *
+ * Returns a `forwardRef` component — `ref` is forwarded to the rendered host element the same
+ * way it works in `praxis-kit/react`. Pass `onElement` to run setup once the real DOM element
+ * exists; this adapter doesn't support `subComponents`.
+ */
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,
