@@ -1,6 +1,7 @@
 export type { BuiltRuntime } from './built-runtime'
 export type { NormalizedOptions } from './normalized-options'
 export type {
+  CompoundComponent,
   ElementRef,
   PolymorphicComponent,
   PolymorphicProps,

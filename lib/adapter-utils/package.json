@@ -19,6 +19,7 @@
     "@praxis-kit/primitive": "workspace:*",
     "@praxis-kit/diagnostics": "workspace:*",
     "@praxis-kit/core": "workspace:*",
+    "@praxis-kit/contract": "workspace:*",
     "@praxis-kit/runtime": "workspace:*",
     "@praxis-kit/pipeline": "workspace:*",
     "@praxis-kit/styling": "workspace:*",

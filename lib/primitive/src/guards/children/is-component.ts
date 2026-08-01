@@ -15,9 +15,9 @@ function isComponentId(value: unknown): value is RestrictedPropertyKey {
 
 export function getComponentId(child: unknown): symbol | undefined {
   if (!isObject(child) || !('type' in child)) return undefined
-  const type = (child as { type: unknown }).type
+  const { type } = child
   if (typeof type !== 'function' && !isObject(type)) return undefined
-  const id = (type as Record<PropertyKey, unknown>)[COMPONENT_ID]
+  const id = Reflect.get(type, COMPONENT_ID)
   return typeof id === 'symbol' ? id : undefined
 }
 

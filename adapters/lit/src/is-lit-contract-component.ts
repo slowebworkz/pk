@@ -1,0 +1,22 @@
+import type { AnyRecord, EmptyRecord, VariantMap } from '@praxis-kit/core'
+import { isFunction } from '@praxis-kit/primitive'
+import { LitElement } from 'lit'
+import type { LitContractComponent } from './types'
+
+/**
+ * Type guard narrowing a generated class down to the public
+ * `LitContractComponent<TVariants, TPluginProps>` interface the adapter
+ * exposes.
+ *
+ * Unlike the vnode-style `PolymorphicComponent<G>` in other adapters, this
+ * type describes an actual constructable class (`new (): ...`) — so unlike
+ * those guards, there's a real runtime fact to check beyond generic-erasure
+ * boundaries: the value is a function whose prototype chain includes
+ * `LitElement`, exactly what `createContractComponent` always produces.
+ */
+export function isLitContractComponent<
+  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
+  TPluginProps extends AnyRecord = EmptyRecord,
+>(value: unknown): value is LitContractComponent<TVariants, TPluginProps> {
+  return isFunction(value) && value.prototype instanceof LitElement
+}

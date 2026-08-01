@@ -3,9 +3,9 @@ import { COMPONENT_DEFAULT_TAG } from './component-id'
 
 function getAsProp(child: unknown): string | undefined {
   if (!isObject(child) || !('props' in child)) return undefined
-  const props = (child as { props: unknown }).props
+  const { props } = child
   if (!isObject(props)) return undefined
-  const as = (props as Record<PropertyKey, unknown>).as
+  const as = Reflect.get(props, 'as')
   return isString(as) && as !== '' ? as : undefined
 }
 
@@ -17,10 +17,10 @@ function getAsProp(child: unknown): string | undefined {
  */
 export function getTag(child: unknown): string | undefined {
   if (!isObject(child) || !('type' in child)) return undefined
-  const t = (child as { type: unknown }).type
+  const { type: t } = child
   if (isString(t)) return t
   if (typeof t === 'function' || isObject(t)) {
-    const defaultTag = (t as Record<PropertyKey, unknown>)[COMPONENT_DEFAULT_TAG]
+    const defaultTag = Reflect.get(t, COMPONENT_DEFAULT_TAG)
     if (!isString(defaultTag)) return undefined
     return getAsProp(child) ?? defaultTag
   }

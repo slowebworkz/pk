@@ -1,6 +1,7 @@
 import { computed, defineComponent } from 'vue'
 import type {
   AnyClassPluginFactory,
+  AnyRecord,
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
@@ -8,10 +9,12 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { COMPONENT_DEFAULT_TAG } from '@praxis-kit/primitive'
+import { finalizeComponent, invariant } from '@praxis-kit/adapter-utils'
 import { applyDisplayName } from './apply-display-name'
 import { buildRuntime } from './build-runtime'
+import { isPolymorphicComponent } from './is-polymorphic-component'
 import { prepareRenderState, render } from './render'
+import { isVueFactoryOptions } from './to-vue-factory-options'
 import type { KnownProps, PolymorphicComponent, UnknownProps } from './types'
 import type { VueFactoryOptions } from './vue-options'
 
@@ -21,8 +24,17 @@ export function createContractComponent<
   Variants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
   TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
->(options: VueFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin>) {
-  const bundle = buildRuntime(options as VueFactoryOptions<TDefault, Props, Variants, TPreset>)
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
+>(
+  options: VueFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> & {
+    readonly subComponents?: TSubComponents
+  },
+): PolymorphicComponent<
+  PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
+> &
+  TSubComponents {
+  invariant(isVueFactoryOptions(options), 'options is not a valid VueFactoryOptions object')
+  const bundle = buildRuntime(options)
 
   const Component = defineComponent({
     // normalizeOptions always supplies `name`, so displayName is always defined here —
@@ -40,12 +52,17 @@ export function createContractComponent<
   })
 
   applyDisplayName(Component, options.name)
-  const defaultTag = bundle.runtime.options.defaultTag
-  if (typeof defaultTag === 'string') {
-    Object.assign(Component, { [COMPONENT_DEFAULT_TAG]: defaultTag })
-  }
+  const assembled = finalizeComponent(
+    Component,
+    bundle.runtime.options.defaultTag,
+    options.subComponents,
+  )
 
-  return Component as unknown as PolymorphicComponent<
-    PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
-  >
+  type G = PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
+  invariant(
+    isPolymorphicComponent<G>(assembled),
+    'Generated component failed to satisfy the PolymorphicComponent shape',
+  )
+
+  return assembled
 }

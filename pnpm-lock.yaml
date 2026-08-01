@@ -706,6 +706,9 @@ importers:
 
   lib/adapter-utils:
     dependencies:
+      '@praxis-kit/contract':
+        specifier: workspace:*
+        version: link:../contract
       '@praxis-kit/core':
         specifier: workspace:*
         version: link:../../packages/core

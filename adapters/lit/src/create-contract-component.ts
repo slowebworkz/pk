@@ -1,5 +1,7 @@
 import {
+  assembleCompoundComponent,
   diffAndApplyAttributes,
+  invariant,
   resolveHostState,
   resolveTagAndNormalizedProps,
   toLooseBundle,
@@ -13,9 +15,12 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { iterate } from '@praxis-kit/primitive'
+import type { AnyRecord } from '@praxis-kit/core'
 import { LitElement, html } from 'lit'
 import { buildRuntime } from './build-runtime'
+import { isLitContractComponent } from './is-lit-contract-component'
 import { registerForSsr } from './render-to-string'
+import { isLitFactoryOptions } from './to-lit-factory-options'
 import type { LitContractComponent, LitFactoryOptions, UnknownProps } from './types'
 
 /**
@@ -44,10 +49,14 @@ export function createContractComponent<
   TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
   TPreset extends RecipeMap<TVariants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
 >(
-  options: LitFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin>,
-): LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> {
-  const bundle = buildRuntime(options as LitFactoryOptions<TDefault, TProps, TVariants, TPreset>)
+  options: LitFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin> & {
+    readonly subComponents?: TSubComponents
+  },
+): LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> & TSubComponents {
+  invariant(isLitFactoryOptions(options), 'options is not a valid LitFactoryOptions object')
+  const bundle = buildRuntime(options)
   const looseBundle = toLooseBundle(bundle)
 
   const variantKeys = options.styling?.variants ? Object.keys(options.styling.variants) : []
@@ -188,13 +197,22 @@ export function createContractComponent<
     Object.defineProperty(PolymorphicLitElement, 'name', { value: options.name })
   }
 
-  // Register for SSR before returning — renderToString looks up the bundle via WeakMap.
-  registerForSsr(PolymorphicLitElement as unknown as LitContractComponent, looseBundle)
+  // Validates the class shape (default generics — registerForSsr's own
+  // parameter type doesn't need TVariants/TPlugin either) before registering
+  // it, replacing what was previously an unchecked cast.
+  invariant(
+    isLitContractComponent(PolymorphicLitElement),
+    'Generated class failed to satisfy the LitContractComponent shape',
+  )
 
-  // Variant key properties are installed by Lit's finalize() at runtime, not
-  // statically declared — cast to the exported contract type here at the boundary.
-  return PolymorphicLitElement as unknown as LitContractComponent<
-    TVariants,
-    ExtractPluginProps<TPlugin>
-  >
+  // Register for SSR before returning — renderToString looks up the bundle via WeakMap.
+  registerForSsr(PolymorphicLitElement, looseBundle)
+
+  const assembled = assembleCompoundComponent(PolymorphicLitElement, options.subComponents)
+
+  // TVariants/TPlugin are erased at runtime and can't be checked by any
+  // guard — the check above already proves the class shape genuinely, this
+  // just bridges the erased generics onto the specific public type.
+  return assembled as unknown as LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> &
+    TSubComponents
 }

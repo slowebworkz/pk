@@ -15,14 +15,18 @@ function init(modules: { typescript: TS }) {
     )
 
     const proxy: tsserverlibrary.LanguageService = Object.create(null)
-    const proxyRecord = proxy as unknown as Record<string, unknown>
 
     for (const k of Object.keys(info.languageService) as Array<
       keyof tsserverlibrary.LanguageService
     >) {
       const x = info.languageService[k]
-      proxyRecord[k] =
-        typeof x === 'function' ? (x as (...a: unknown[]) => unknown).bind(info.languageService) : x
+      Reflect.set(
+        proxy,
+        k,
+        typeof x === 'function'
+          ? (x as (...a: unknown[]) => unknown).bind(info.languageService)
+          : x,
+      )
     }
 
     proxy.getSemanticDiagnostics = (fileName: string) => {

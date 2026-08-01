@@ -1,6 +1,7 @@
 export type { WithChildRules, BuiltChildrenEvaluator, BuiltRuntime } from './built-runtime'
 export type { NormalizedOptions } from './normalized-options'
 export type {
+  CompoundComponent,
   PolymorphicComponent,
   PolymorphicProps,
   PolymorphicWithAsChild,

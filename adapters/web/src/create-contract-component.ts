@@ -1,14 +1,24 @@
 import type {
   AnyClassPluginFactory,
+  AnyRecord,
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { diffAndApplyAttributes, resolveHostState, toLooseBundle } from '@praxis-kit/adapter-utils'
+import type { Diagnostics } from '@praxis-kit/diagnostics'
+import {
+  assembleCompoundComponent,
+  diffAndApplyAttributes,
+  invariant,
+  resolveHostState,
+  toLooseBundle,
+} from '@praxis-kit/adapter-utils'
 import { buildRuntime } from './build-runtime'
+import { isWebContractComponent } from './is-web-contract-component'
 import { registerForSsr } from './render-to-string'
+import { isWebFactoryOptions } from './to-web-factory-options'
 import type { WebContractComponent, WebFactoryOptions, UnknownProps } from './types/index'
 
 /**
@@ -44,10 +54,14 @@ export function createContractComponent<
   TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
   TPreset extends RecipeMap<TVariants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
 >(
-  options: WebFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin>,
-): WebContractComponent<TVariants, ExtractPluginProps<TPlugin>> {
-  const bundle = buildRuntime(options as WebFactoryOptions<TDefault, TProps, TVariants, TPreset>)
+  options: WebFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin> & {
+    readonly subComponents?: TSubComponents
+  },
+): WebContractComponent<TVariants, ExtractPluginProps<TPlugin>> & TSubComponents {
+  invariant(isWebFactoryOptions(options), 'options is not a valid WebFactoryOptions object')
+  const bundle = buildRuntime(options)
   const looseBundle = toLooseBundle(bundle)
 
   const variantKeys = options.styling?.variants ? Object.keys(options.styling.variants) : []
@@ -73,6 +87,10 @@ export function createContractComponent<
     typeof HTMLElement !== 'undefined' ? HTMLElement : (class {} as unknown as typeof HTMLElement)
 
   class PolymorphicWebElement extends BaseElement {
+    // Set via Object.defineProperty below, right after the class is declared —
+    // `declare` here just tells TS the static side genuinely has this property.
+    declare static diagnostics: Diagnostics
+
     // Tracks keys set by the pipeline last run so stale ones are removed.
     private _pipelineAttrs = new Set<string>()
 
@@ -160,10 +178,26 @@ export function createContractComponent<
 
   Object.defineProperty(PolymorphicWebElement, 'diagnostics', { value: bundle.diagnostics })
 
-  registerForSsr(PolymorphicWebElement as unknown as WebContractComponent, looseBundle)
+  // Validates the class shape (default generics — registerForSsr's own
+  // parameter type doesn't need TVariants/TPlugin either) before registering
+  // it, replacing what was previously an unchecked cast. Captured into a
+  // plain const first — narrowing a `class` declaration's own identifier
+  // doesn't reliably persist to later statements the same way it does for
+  // an ordinary variable.
+  const contractClass = PolymorphicWebElement
+  invariant(
+    isWebContractComponent(contractClass),
+    'Generated class failed to satisfy the WebContractComponent shape',
+  )
 
-  return PolymorphicWebElement as unknown as WebContractComponent<
-    TVariants,
-    ExtractPluginProps<TPlugin>
-  >
+  // Register for SSR before returning — renderToString looks up the bundle via WeakMap.
+  registerForSsr(contractClass, looseBundle)
+
+  const assembled = assembleCompoundComponent(contractClass, options.subComponents)
+
+  // TVariants/TPlugin are erased at runtime and can't be checked by any
+  // guard — the check above already proves the class shape genuinely, this
+  // just bridges the erased generics onto the specific public type.
+  return assembled as unknown as WebContractComponent<TVariants, ExtractPluginProps<TPlugin>> &
+    TSubComponents
 }
