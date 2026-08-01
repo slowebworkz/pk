@@ -8,6 +8,7 @@ import {
 } from './factories'
 import { AriaPolicyEngine } from './polymorphic-validator'
 import { DiagnosticCategory, DiagnosticCode, silentDiagnostics } from '@praxis-kit/diagnostics'
+import { isString } from '@praxis-kit/primitive'
 
 import type { AriaContext } from '../types'
 
@@ -178,7 +179,15 @@ describe('createRemoveAttributeRule', () => {
   // needed anywhere, unlike the hand-rolled custom-rule tests elsewhere in this file.
   it('integrates with AriaPolicyEngine: fires and auto-applies the fix', () => {
     const dangerousHrefRule = createRemoveAttributeRule('href', {
-      when: (ctx) => typeof ctx.props.href === 'string' && ctx.props.href.startsWith('javascript:'),
+      when: (ctx) => {
+        const href = ctx.props.href
+        return (
+          isString(href) &&
+          ['javascript:', 'data:', 'vbscript:'].some((scheme) =>
+            href.toLowerCase().startsWith(scheme),
+          )
+        )
+      },
       severity: 'error',
       message: 'dangerous URL scheme',
       readsProps: ['href'],
