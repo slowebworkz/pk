@@ -8,6 +8,7 @@
     size?: 'sm' | 'md' | 'lg'
     variantKey?: 'cta' | 'subtle'
     disabled?: boolean
+    loading?: boolean
     class?: string
     onclick?: (e: MouseEvent) => void
     children?: Snippet
