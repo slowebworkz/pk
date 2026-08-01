@@ -57,5 +57,6 @@ export function buildRuntime<
     filterProps,
     slotValidator,
     ...(childrenEvaluator !== undefined && { childrenEvaluator }),
+    ...(options.onElement !== undefined && { onElement: options.onElement }),
   } as BuiltRuntime<G, TOptions>
 }

@@ -22,6 +22,7 @@ export const FACTORY_OPTIONS_FIELD_VALIDATORS: Record<string, (value: unknown) =
   enforcement: (v) => v === undefined || isObject(v),
   diagnostics: (v) => v === undefined || isObject(v),
   subComponents: (v) => v === undefined || isObject(v),
+  onElement: (v) => v === undefined || isFunction(v),
 }
 
 /**

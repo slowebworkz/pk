@@ -24,4 +24,6 @@ export type RenderInput = Readonly<{
   slots: Slots
   slotValidator: SlotValidator
   childrenEvaluator?: ChildrenEvaluator
+  /** Vue function-ref capturing the real rendered element, for `FactoryOptions.onElement`. */
+  elementRef?: ((element: Element | null) => void) | undefined
 }>
