@@ -1,6 +1,7 @@
 import {
   assembleCompoundComponent,
   diffAndApplyAttributes,
+  invariant,
   resolveHostState,
   resolveSubComponentOptions,
   resolveTagAndNormalizedProps,
@@ -18,7 +19,9 @@ import { iterate } from '@praxis-kit/primitive'
 import type { AnyRecord } from '@praxis-kit/core'
 import { LitElement, html } from 'lit'
 import { buildRuntime } from './build-runtime'
+import { isLitContractComponent } from './is-lit-contract-component'
 import { registerForSsr } from './render-to-string'
+import { isLitFactoryOptions } from './to-lit-factory-options'
 import type { LitContractComponent, LitFactoryOptions, UnknownProps } from './types'
 
 /**
@@ -54,9 +57,11 @@ export function createContractComponent<
   },
 ): LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> & TSubComponents {
   const runtimeOptions = resolveSubComponentOptions(options)
-  const bundle = buildRuntime(
-    runtimeOptions as LitFactoryOptions<TDefault, TProps, TVariants, TPreset>,
+  invariant(
+    isLitFactoryOptions(runtimeOptions),
+    'resolveSubComponentOptions returned a non-object options value',
   )
+  const bundle = buildRuntime(runtimeOptions)
   const looseBundle = toLooseBundle(bundle)
 
   const variantKeys = options.styling?.variants ? Object.keys(options.styling.variants) : []
@@ -197,13 +202,22 @@ export function createContractComponent<
     Object.defineProperty(PolymorphicLitElement, 'name', { value: options.name })
   }
 
+  // Validates the class shape (default generics — registerForSsr's own
+  // parameter type doesn't need TVariants/TPlugin either) before registering
+  // it, replacing what was previously an unchecked cast.
+  invariant(
+    isLitContractComponent(PolymorphicLitElement),
+    'Generated class failed to satisfy the LitContractComponent shape',
+  )
+
   // Register for SSR before returning — renderToString looks up the bundle via WeakMap.
-  registerForSsr(PolymorphicLitElement as unknown as LitContractComponent, looseBundle)
+  registerForSsr(PolymorphicLitElement, looseBundle)
 
   const assembled = assembleCompoundComponent(PolymorphicLitElement, options.subComponents)
 
-  // Variant key properties are installed by Lit's finalize() at runtime, not
-  // statically declared — cast to the exported contract type here at the boundary.
+  // TVariants/TPlugin are erased at runtime and can't be checked by any
+  // guard — the check above already proves the class shape genuinely, this
+  // just bridges the erased generics onto the specific public type.
   return assembled as unknown as LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> &
     TSubComponents
 }

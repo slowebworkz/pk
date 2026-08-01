@@ -1,5 +1,6 @@
 import type {
   AnyClassPluginFactory,
+  AnyRecord,
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
@@ -7,10 +8,10 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { finalizeComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, invariant, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
 import type { Ref } from 'react'
 import type { PolymorphicComponent, ReactFactoryOptions, UnknownProps } from '../shared'
-import { applyDisplayName, render } from '../shared'
+import { applyDisplayName, isPolymorphicComponent, isReactFactoryOptions, render } from '../shared'
 import { buildRuntime } from './build-runtime'
 
 export function createContractComponent<
@@ -20,16 +21,21 @@ export function createContractComponent<
   TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends ElementType = ElementType,
-  TSubComponents extends Readonly<Record<string, unknown>> = EmptyRecord,
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
 >(
   options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed> & {
     readonly subComponents?: TSubComponents
   },
-) {
+): PolymorphicComponent<
+  PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset, TAllowed>
+> &
+  TSubComponents {
   const runtimeOptions = resolveSubComponentOptions(options)
-  const bundle = buildRuntime(
-    runtimeOptions as ReactFactoryOptions<TDefault, Props, Variants, TPreset>,
+  invariant(
+    isReactFactoryOptions(runtimeOptions),
+    'resolveSubComponentOptions returned a non-object options value',
   )
+  const bundle = buildRuntime(runtimeOptions)
 
   function Component({ ref, ...props }: UnknownProps & { ref?: Ref<unknown> }) {
     return render({ ...bundle, props, ref: ref ?? null })
@@ -42,8 +48,17 @@ export function createContractComponent<
     options.subComponents,
   )
 
-  return assembled as unknown as PolymorphicComponent<
-    PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset, TAllowed>
-  > &
-    TSubComponents
+  type G = PolymorphicGenerics<
+    TDefault,
+    Props & ExtractPluginProps<TPlugin>,
+    Variants,
+    TPreset,
+    TAllowed
+  >
+  invariant(
+    isPolymorphicComponent<G>(assembled),
+    'Generated component failed to satisfy the PolymorphicComponent shape',
+  )
+
+  return assembled
 }

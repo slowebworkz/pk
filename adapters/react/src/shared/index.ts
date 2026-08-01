@@ -1,4 +1,6 @@
 export type { CompiledArtifact, ReactFactoryOptions } from './react-options'
+export { isReactFactoryOptions } from './to-react-factory-options'
+export { isPolymorphicComponent } from './is-polymorphic-component'
 export type * from './types'
 export { mergeRefs } from './merge-refs'
 export { applyDisplayName } from './apply-display-name'

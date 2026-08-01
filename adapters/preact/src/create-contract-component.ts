@@ -8,12 +8,14 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { finalizeComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, invariant, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
 import { forwardRef } from 'preact/compat'
 import type { ForwardedRef } from 'preact/compat'
 import { applyDisplayName } from './apply-display-name'
 import { render } from './render'
 import { buildRuntime } from './build-runtime'
+import { isPolymorphicComponent } from './is-polymorphic-component'
+import { isPreactFactoryOptions } from './to-preact-factory-options'
 import type { AnyVNode, PolymorphicComponent, UnknownProps } from './types'
 import type { PreactFactoryOptions } from './preact-options'
 
@@ -28,11 +30,16 @@ export function createContractComponent<
   options: PreactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> & {
     readonly subComponents?: TSubComponents
   },
-) {
+): PolymorphicComponent<
+  PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
+> &
+  TSubComponents {
   const runtimeOptions = resolveSubComponentOptions(options)
-  const bundle = buildRuntime(
-    runtimeOptions as PreactFactoryOptions<TDefault, Props, Variants, TPreset>,
+  invariant(
+    isPreactFactoryOptions(runtimeOptions),
+    'resolveSubComponentOptions returned a non-object options value',
   )
+  const bundle = buildRuntime(runtimeOptions)
 
   const Component = forwardRef(function Component(
     props: UnknownProps,
@@ -48,8 +55,11 @@ export function createContractComponent<
     options.subComponents,
   )
 
-  return assembled as unknown as PolymorphicComponent<
-    PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
-  > &
-    TSubComponents
+  type G = PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
+  invariant(
+    isPolymorphicComponent<G>(assembled),
+    'Generated component failed to satisfy the PolymorphicComponent shape',
+  )
+
+  return assembled
 }

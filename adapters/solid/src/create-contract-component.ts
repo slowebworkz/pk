@@ -8,10 +8,12 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { finalizeComponent, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, invariant, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
 import { applyDisplayName } from './apply-display-name'
 import { buildRuntime } from './build-runtime'
+import { isPolymorphicComponent } from './is-polymorphic-component'
 import { render } from './render'
+import { isSolidFactoryOptions } from './to-solid-factory-options'
 import type { SolidFactoryOptions } from './solid-options'
 import type { KnownProps, PolymorphicComponent, SolidElement, UnknownProps } from './types'
 
@@ -26,8 +28,25 @@ export function createContractComponent<
   options: SolidFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> & {
     readonly subComponents?: TSubComponents
   },
-) {
+): PolymorphicComponent<
+  PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
+> &
+  TSubComponents {
   const runtimeOptions = resolveSubComponentOptions(options)
+  invariant(
+    isSolidFactoryOptions(runtimeOptions),
+    'resolveSubComponentOptions returned a non-object options value',
+  )
+  // Unlike react/vue/preact, this adapter's buildRuntime can't accept the
+  // narrowed value as-is: its signature is
+  // `SolidFactoryOptions<TDefault, Props, Variants, TPreset> & TOptions`,
+  // defaulting TPlugin itself and inferring a fresh TOptions — a specific
+  // TPlugin instantiation isn't assignable to that default under
+  // exactOptionalPropertyTypes (a known, separately-tracked plugin/styling
+  // generic invariance; see the NormalizeFn bivariance note elsewhere in this
+  // codebase). TPlugin is erased at runtime regardless, so no guard could
+  // ever check this gap — it needs an assertion the same way buildRuntime's
+  // TPlugin elision does in every other adapter.
   const bundle = buildRuntime(
     runtimeOptions as SolidFactoryOptions<TDefault, Props, Variants, TPreset>,
   )
@@ -46,8 +65,11 @@ export function createContractComponent<
     options.subComponents,
   )
 
-  return assembled as unknown as PolymorphicComponent<
-    PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
-  > &
-    TSubComponents
+  type G = PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
+  invariant(
+    isPolymorphicComponent<G>(assembled),
+    'Generated component failed to satisfy the PolymorphicComponent shape',
+  )
+
+  return assembled
 }
