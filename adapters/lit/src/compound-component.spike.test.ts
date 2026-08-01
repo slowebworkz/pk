@@ -1,12 +1,10 @@
 /**
  * Proves the `subComponents` compound-component mechanism end-to-end in Lit:
  * typed compound output (static properties on the custom-element class),
- * derived `enforcement.children` matching by `instanceof` (custom-element
- * children have no vnode-style `.type`, unlike React/Vue), and non-regression
- * for plain (non-compound) usage.
+ * rendering the attached sub-components as ordinary children, and
+ * non-regression for plain (non-compound) usage.
  */
 import { describe, it, expect, expectTypeOf, beforeAll, afterEach } from 'vitest'
-import { throwDiagnostics } from '@praxis-kit/diagnostics'
 import { createContractComponent } from './create-contract-component'
 
 type LitEl = HTMLElement & { updateComplete: Promise<boolean> }
@@ -59,26 +57,6 @@ describe('subComponents (compound component generation spike)', () => {
 
     expect(card.querySelector('spike-card-header')).toBeTruthy()
     expect(card.querySelector('spike-card-footer')).toBeTruthy()
-  })
-
-  it('derives enforcement.children from subComponents via instanceof — custom-element children have no vnode-style .type — and rejects an unlisted child', async () => {
-    const Stray = createContractComponent({ tag: 'aside', name: 'Stray' })
-    define('spike-stray', Stray)
-
-    const ClosedCard = createContractComponent({
-      tag: 'section',
-      name: 'ClosedCard',
-      subComponents: { Header, Content, Footer },
-      enforcement: { diagnostics: throwDiagnostics, exclusiveChildren: true },
-    })
-    define('spike-closed-card', ClosedCard)
-
-    const card = document.createElement('spike-closed-card')
-    card.appendChild(new Header())
-    card.appendChild(new Stray())
-    document.body.appendChild(card)
-
-    await expect((card as unknown as LitEl).updateComplete).rejects.toThrow(/unexpected child/)
   })
 
   it('a plain (non-compound) component is unaffected — no subComponents option, no static sub-component properties', () => {

@@ -8,7 +8,7 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { finalizeComponent, invariant, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, invariant } from '@praxis-kit/adapter-utils'
 import type { Ref } from 'react'
 import type { PolymorphicComponent, ReactFactoryOptions, UnknownProps } from '../shared'
 import { applyDisplayName, isPolymorphicComponent, isReactFactoryOptions, render } from '../shared'
@@ -30,12 +30,8 @@ export function createContractComponent<
   PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset, TAllowed>
 > &
   TSubComponents {
-  const runtimeOptions = resolveSubComponentOptions(options)
-  invariant(
-    isReactFactoryOptions(runtimeOptions),
-    'resolveSubComponentOptions returned a non-object options value',
-  )
-  const bundle = buildRuntime(runtimeOptions)
+  invariant(isReactFactoryOptions(options), 'options is not a valid ReactFactoryOptions object')
+  const bundle = buildRuntime(options)
 
   function Component({ ref, ...props }: UnknownProps & { ref?: Ref<unknown> }) {
     return render({ ...bundle, props, ref: ref ?? null })

@@ -8,7 +8,7 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { finalizeComponent, invariant, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, invariant } from '@praxis-kit/adapter-utils'
 import { applyDisplayName } from './apply-display-name'
 import { buildRuntime } from './build-runtime'
 import { isPolymorphicComponent } from './is-polymorphic-component'
@@ -32,13 +32,8 @@ export function createContractComponent<
   PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
 > &
   TSubComponents {
-  const runtimeOptions = resolveSubComponentOptions(options)
-  invariant(
-    isSolidFactoryOptions(runtimeOptions),
-    'resolveSubComponentOptions returned a non-object options value',
-  )
-  // Unlike react/vue/preact, this adapter's buildRuntime can't accept the
-  // narrowed value as-is: its signature is
+  invariant(isSolidFactoryOptions(options), 'options is not a valid SolidFactoryOptions object')
+  // This adapter's buildRuntime can't accept `options` as-is: its signature is
   // `SolidFactoryOptions<TDefault, Props, Variants, TPreset> & TOptions`,
   // defaulting TPlugin itself and inferring a fresh TOptions — a specific
   // TPlugin instantiation isn't assignable to that default under
@@ -47,9 +42,7 @@ export function createContractComponent<
   // codebase). TPlugin is erased at runtime regardless, so no guard could
   // ever check this gap — it needs an assertion the same way buildRuntime's
   // TPlugin elision does in every other adapter.
-  const bundle = buildRuntime(
-    runtimeOptions as SolidFactoryOptions<TDefault, Props, Variants, TPreset>,
-  )
+  const bundle = buildRuntime(options as SolidFactoryOptions<TDefault, Props, Variants, TPreset>)
 
   const Component = (props: UnknownProps): SolidElement => {
     return render({

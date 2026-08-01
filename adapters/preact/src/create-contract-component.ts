@@ -8,7 +8,7 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { finalizeComponent, invariant, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, invariant } from '@praxis-kit/adapter-utils'
 import { forwardRef } from 'preact/compat'
 import type { ForwardedRef } from 'preact/compat'
 import { applyDisplayName } from './apply-display-name'
@@ -34,12 +34,8 @@ export function createContractComponent<
   PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
 > &
   TSubComponents {
-  const runtimeOptions = resolveSubComponentOptions(options)
-  invariant(
-    isPreactFactoryOptions(runtimeOptions),
-    'resolveSubComponentOptions returned a non-object options value',
-  )
-  const bundle = buildRuntime(runtimeOptions)
+  invariant(isPreactFactoryOptions(options), 'options is not a valid PreactFactoryOptions object')
+  const bundle = buildRuntime(options)
 
   const Component = forwardRef(function Component(
     props: UnknownProps,

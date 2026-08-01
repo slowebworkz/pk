@@ -13,7 +13,6 @@ import {
   diffAndApplyAttributes,
   invariant,
   resolveHostState,
-  resolveSubComponentOptions,
   toLooseBundle,
 } from '@praxis-kit/adapter-utils'
 import { buildRuntime } from './build-runtime'
@@ -61,12 +60,8 @@ export function createContractComponent<
     readonly subComponents?: TSubComponents
   },
 ): WebContractComponent<TVariants, ExtractPluginProps<TPlugin>> & TSubComponents {
-  const runtimeOptions = resolveSubComponentOptions(options)
-  invariant(
-    isWebFactoryOptions(runtimeOptions),
-    'resolveSubComponentOptions returned a non-object options value',
-  )
-  const bundle = buildRuntime(runtimeOptions)
+  invariant(isWebFactoryOptions(options), 'options is not a valid WebFactoryOptions object')
+  const bundle = buildRuntime(options)
   const looseBundle = toLooseBundle(bundle)
 
   const variantKeys = options.styling?.variants ? Object.keys(options.styling.variants) : []

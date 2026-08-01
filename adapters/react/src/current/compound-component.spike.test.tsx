@@ -1,8 +1,7 @@
 /**
  * Proves the `subComponents` compound-component mechanism end-to-end in
- * React: typed compound output, derived `enforcement.children` catching
- * drift between the attached sub-components and the children contract, and
- * non-regression for plain (non-compound) usage.
+ * React: typed compound output, rendering the attached sub-components as
+ * ordinary children, and non-regression for plain (non-compound) usage.
  */
 import { describe, it, expect, expectTypeOf } from 'vitest'
 import { createElement } from 'react'
@@ -56,35 +55,7 @@ describe('subComponents (compound component generation spike)', () => {
     expect(section.querySelector('footer')).toBeTruthy()
   })
 
-  it('derives enforcement.children from subComponents and rejects an unlisted child', () => {
-    // exclusiveChildren: true makes the derived rule set a closed content
-    // model — without it, enforcement.children only describes the *named*
-    // children, it doesn't reject everything else (matches
-    // packages/core/src/html/contracts/helpers.ts's contract() vs
-    // closedContract() distinction). subComponents intentionally leaves
-    // this opt-in rather than implying a closed model, so callers can still
-    // slot in arbitrary children alongside the named sub-components.
-    const Stray = createContractComponent({ tag: 'aside' as const, name: 'Stray' })
-    const ClosedCard = createContractComponent({
-      tag: 'section' as const,
-      name: 'ClosedCard',
-      subComponents: { Header, Content, Footer },
-      enforcement: { exclusiveChildren: true },
-    })
-
-    expect(() =>
-      dom.mount(
-        createElement(
-          box(ClosedCard),
-          null,
-          createElement(box(ClosedCard.Header), { key: 'h' }),
-          createElement(box(Stray), { key: 's' }),
-        ),
-      ),
-    ).toThrow(/unexpected child/)
-  })
-
-  it('a plain (non-compound) component is unaffected — no subComponents option, no drift-checking behavior', () => {
+  it('a plain (non-compound) component is unaffected — no subComponents option', () => {
     const Plain = createContractComponent({ tag: 'div' as const, name: 'Plain' })
     type Expected = PolymorphicComponent<
       PolymorphicGenerics<'div', EmptyRecord, Readonly<EmptyRecord>>

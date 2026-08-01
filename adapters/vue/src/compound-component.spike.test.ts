@@ -1,10 +1,10 @@
 /**
  * Proves the `subComponents` compound-component mechanism end-to-end in
- * Vue: typed compound output, derived `enforcement.children` catching
- * drift between the attached sub-components and the children contract, and
- * non-regression for plain (non-compound) usage. Mirrors
- * `adapters/react/src/current/compound-component.spike.test.tsx` — same
- * assertions, proving the framework-neutral core behaves identically here.
+ * Vue: typed compound output, rendering the attached sub-components as
+ * ordinary children, and non-regression for plain (non-compound) usage.
+ * Mirrors `adapters/react/src/current/compound-component.spike.test.tsx` —
+ * same assertions, proving the framework-neutral core behaves identically
+ * here.
  */
 import { describe, it, expect, expectTypeOf } from 'vitest'
 import { mount } from '@vue/test-utils'
@@ -51,32 +51,7 @@ describe('subComponents (compound component generation spike)', () => {
     expect(wrapper.element.querySelector('footer')).toBeTruthy()
   })
 
-  it('derives enforcement.children from subComponents and rejects an unlisted child', () => {
-    // exclusiveChildren: true makes the derived rule set a closed content
-    // model — without it, enforcement.children only describes the *named*
-    // children, it doesn't reject everything else (matches
-    // packages/core/src/html/contracts/helpers.ts's contract() vs
-    // closedContract() distinction). subComponents intentionally leaves
-    // this opt-in rather than implying a closed model, so callers can still
-    // slot in arbitrary children alongside the named sub-components.
-    const Stray = createContractComponent({ tag: 'aside', name: 'Stray' })
-    const ClosedCard = createContractComponent({
-      tag: 'section',
-      name: 'ClosedCard',
-      subComponents: { Header, Content, Footer },
-      enforcement: { exclusiveChildren: true },
-    })
-
-    expect(() =>
-      mount(box(ClosedCard), {
-        slots: {
-          default: () => [h(box(ClosedCard.Header)), h(box(Stray))],
-        },
-      }),
-    ).toThrow(/unexpected child/)
-  })
-
-  it('a plain (non-compound) component is unaffected — no subComponents option, no drift-checking behavior', () => {
+  it('a plain (non-compound) component is unaffected — no subComponents option', () => {
     const Plain = createContractComponent({ tag: 'div', name: 'Plain' })
     type Expected = PolymorphicComponent<
       PolymorphicGenerics<'div', EmptyRecord, Readonly<EmptyRecord>>

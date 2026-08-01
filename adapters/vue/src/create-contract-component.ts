@@ -9,7 +9,7 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { finalizeComponent, invariant, resolveSubComponentOptions } from '@praxis-kit/adapter-utils'
+import { finalizeComponent, invariant } from '@praxis-kit/adapter-utils'
 import { applyDisplayName } from './apply-display-name'
 import { buildRuntime } from './build-runtime'
 import { isPolymorphicComponent } from './is-polymorphic-component'
@@ -33,12 +33,8 @@ export function createContractComponent<
   PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>
 > &
   TSubComponents {
-  const runtimeOptions = resolveSubComponentOptions(options)
-  invariant(
-    isVueFactoryOptions(runtimeOptions),
-    'resolveSubComponentOptions returned a non-object options value',
-  )
-  const bundle = buildRuntime(runtimeOptions)
+  invariant(isVueFactoryOptions(options), 'options is not a valid VueFactoryOptions object')
+  const bundle = buildRuntime(options)
 
   const Component = defineComponent({
     // normalizeOptions always supplies `name`, so displayName is always defined here —

@@ -25,10 +25,9 @@ export const FACTORY_OPTIONS_FIELD_VALIDATORS: Record<string, (value: unknown) =
 }
 
 /**
- * Type guard narrowing the generic `FactoryOptions` shape that
- * `resolveSubComponentOptions` returns down to an adapter-specific factory
- * options type `T` — the type each adapter's `buildRuntime` is declared
- * against.
+ * Type guard narrowing the generic `FactoryOptions` shape down to an
+ * adapter-specific factory options type `T` — the type each adapter's
+ * `buildRuntime` is declared against.
  *
  * Walks every own enumerable property on `options` and checks it against
  * `FACTORY_OPTIONS_FIELD_VALIDATORS` plus `extraFieldValidators` (the

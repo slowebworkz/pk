@@ -16,10 +16,9 @@ const WEB_FIELD_VALIDATORS: Record<string, (value: unknown) => boolean> = {
 }
 
 /**
- * Type guard narrowing the generic `FactoryOptions` shape that
- * `resolveSubComponentOptions` returns down to `WebFactoryOptions` — the
- * type `buildRuntime` is declared against. See `isFactoryOptionsLike` for
- * what this does and doesn't validate.
+ * Type guard narrowing the generic `FactoryOptions` shape down to
+ * `WebFactoryOptions` — the type `buildRuntime` is declared against. See
+ * `isFactoryOptionsLike` for what this does and doesn't validate.
  */
 export function isWebFactoryOptions<
   TDefault extends ElementType,

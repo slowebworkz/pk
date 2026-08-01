@@ -18,10 +18,9 @@ const REACT_FIELD_VALIDATORS: Record<string, (value: unknown) => boolean> = {
 }
 
 /**
- * Type guard narrowing the generic `FactoryOptions` shape that
- * `resolveSubComponentOptions` returns down to `ReactFactoryOptions` — the
- * type `buildRuntime` is declared against. See `isFactoryOptionsLike` for
- * what this does and doesn't validate.
+ * Type guard narrowing the generic `FactoryOptions` shape down to
+ * `ReactFactoryOptions` — the type `buildRuntime` is declared against. See
+ * `isFactoryOptionsLike` for what this does and doesn't validate.
  */
 export function isReactFactoryOptions<
   TDefault extends ElementType,
