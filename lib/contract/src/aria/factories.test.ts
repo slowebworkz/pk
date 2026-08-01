@@ -178,7 +178,11 @@ describe('createRemoveAttributeRule', () => {
   // needed anywhere, unlike the hand-rolled custom-rule tests elsewhere in this file.
   it('integrates with AriaPolicyEngine: fires and auto-applies the fix', () => {
     const dangerousHrefRule = createRemoveAttributeRule('href', {
-      when: (ctx) => typeof ctx.props.href === 'string' && ctx.props.href.startsWith('javascript:'),
+      when: (ctx) =>
+        typeof ctx.props.href === 'string' &&
+        ['javascript:', 'data:', 'vbscript:'].some((scheme) =>
+          ctx.props.href.toLowerCase().startsWith(scheme),
+        ),
       severity: 'error',
       message: 'dangerous URL scheme',
       readsProps: ['href'],
