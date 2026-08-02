@@ -4,6 +4,8 @@ import type {
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
+  NoPreset,
+  NoVariants,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
@@ -51,8 +53,8 @@ import type { WebContractComponent, WebFactoryOptions, UnknownProps } from './ty
 export function createContractComponent<
   TDefault extends ElementType,
   TProps extends UnknownProps = EmptyRecord,
-  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
-  TPreset extends RecipeMap<TVariants> = Readonly<EmptyRecord>,
+  TVariants extends Readonly<VariantMap> = NoVariants,
+  TPreset extends RecipeMap<TVariants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
 >(

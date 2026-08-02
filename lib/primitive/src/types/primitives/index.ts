@@ -1,4 +1,13 @@
-import type { AnyRecord, EmptyRecord, StringMap, SubComponentMap } from '../any-record'
+import type {
+  AnyRecord,
+  EmptyRecord,
+  MergeRecords,
+  NoPluginProps,
+  NoPreset,
+  NoVariants,
+  StringMap,
+  SubComponentMap,
+} from '../any-record'
 import type { AnyFunction } from '../any-function'
 import type { ElementType } from '../element-type'
 import type { Factory, UnaryFn } from '../function-types'
@@ -6,7 +15,16 @@ import type { IntrinsicTag } from '../intrinsic-tag'
 import type { AnyRef, RefCallback, RefObject } from '../ref'
 import type { KnownAriaRole } from '../../constants'
 
-export type { AnyRecord, EmptyRecord, StringMap, SubComponentMap }
+export type {
+  AnyRecord,
+  EmptyRecord,
+  MergeRecords,
+  NoPluginProps,
+  NoPreset,
+  NoVariants,
+  StringMap,
+  SubComponentMap,
+}
 export type { AnyFunction }
 export type { ElementType }
 export type { Factory, UnaryFn }

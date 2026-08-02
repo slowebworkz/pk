@@ -4,6 +4,8 @@ import type {
   ElementType,
   EmptyRecord,
   FactoryOptions,
+  NoPreset,
+  NoVariants,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
@@ -18,8 +20,8 @@ import type { FilterPredicate } from '@praxis-kit/adapter-utils'
 export type WebFactoryOptions<
   TDefault extends ElementType = ElementType,
   TProps extends AnyRecord = EmptyRecord,
-  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
-  TPreset extends RecipeMap<TVariants> = Readonly<EmptyRecord>,
+  TVariants extends Readonly<VariantMap> = NoVariants,
+  TPreset extends RecipeMap<TVariants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
 > = FactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin> & {
   readonly filterProps?: FilterPredicate

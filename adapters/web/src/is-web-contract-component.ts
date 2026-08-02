@@ -1,4 +1,4 @@
-import type { AnyRecord, EmptyRecord, VariantMap } from '@praxis-kit/core'
+import type { AnyRecord, EmptyRecord, NoVariants, VariantMap } from '@praxis-kit/core'
 import { isFunction, isObject } from '@praxis-kit/primitive'
 import type { WebContractComponent } from './types/index'
 
@@ -19,7 +19,7 @@ import type { WebContractComponent } from './types/index'
  * of the check is skipped when `HTMLElement` doesn't exist.
  */
 export function isWebContractComponent<
-  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
+  TVariants extends Readonly<VariantMap> = NoVariants,
   TPluginProps extends AnyRecord = EmptyRecord,
 >(value: unknown): value is WebContractComponent<TVariants, TPluginProps> {
   if (!isFunction(value)) return false

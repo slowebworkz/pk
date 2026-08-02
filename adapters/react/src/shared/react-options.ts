@@ -1,8 +1,8 @@
 import type {
   AnyClassPluginFactory,
   ElementType as CoreElementType,
-  EmptyRecord,
   FactoryOptions,
+  NoPreset,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
@@ -25,7 +25,7 @@ export type ReactFactoryOptions<
   TDefault extends CoreElementType,
   Props extends UnknownProps,
   Variants extends Readonly<VariantMap>,
-  TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
+  TPreset extends RecipeMap<Variants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends CoreElementType = CoreElementType,
 > = FactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed> & {

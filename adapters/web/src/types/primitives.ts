@@ -1,4 +1,4 @@
-import type { AnyRecord, EmptyRecord, VariantMap } from '@praxis-kit/core'
+import type { AnyRecord, EmptyRecord, NoVariants, VariantMap } from '@praxis-kit/core'
 import type { Diagnostics } from '@praxis-kit/diagnostics'
 
 export type UnknownProps = AnyRecord
@@ -15,7 +15,7 @@ export type ResolvedAttributes = AnyRecord
  * Variant key instance properties are typed via TVariants.
  */
 export type WebContractComponent<
-  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
+  TVariants extends Readonly<VariantMap> = NoVariants,
   TPluginProps extends AnyRecord = EmptyRecord,
 > = {
   new (): HTMLElement & {

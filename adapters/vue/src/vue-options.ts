@@ -1,8 +1,8 @@
 import type {
   AnyClassPluginFactory,
   ElementType,
-  EmptyRecord,
   FactoryOptions,
+  NoPreset,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
@@ -14,7 +14,7 @@ export type VueFactoryOptions<
   TDefault extends ElementType,
   Props extends UnknownProps,
   Variants extends Readonly<VariantMap>,
-  TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
+  TPreset extends RecipeMap<Variants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
 > = FactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> & {
   /**

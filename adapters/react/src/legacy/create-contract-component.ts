@@ -3,6 +3,9 @@ import type {
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
+  MergeRecords,
+  NoPreset,
+  NoVariants,
   PolymorphicGenerics,
   RecipeMap,
   VariantMap,
@@ -39,8 +42,8 @@ import { buildRuntime } from './build-runtime'
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,
-  Variants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
-  TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
+  Variants extends Readonly<VariantMap> = NoVariants,
+  TPreset extends RecipeMap<Variants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends ElementType = ElementType,
 >(options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed>) {
@@ -85,6 +88,12 @@ export function createContractComponent<
   }
 
   return Component as unknown as PolymorphicComponent<
-    PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset, TAllowed>
+    PolymorphicGenerics<
+      TDefault,
+      MergeRecords<Props, ExtractPluginProps<TPlugin>>,
+      Variants,
+      TPreset,
+      TAllowed
+    >
   >
 }
