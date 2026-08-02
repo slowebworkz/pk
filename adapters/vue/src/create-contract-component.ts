@@ -18,6 +18,29 @@ import { isVueFactoryOptions } from './to-vue-factory-options'
 import type { KnownProps, PolymorphicComponent, UnknownProps } from './types'
 import type { VueFactoryOptions } from './vue-options'
 
+/**
+ * Creates a polymorphic Vue component with praxis-kit contracts applied.
+ *
+ * ```ts
+ * const Button = createContractComponent({
+ *   tag: 'button',
+ *   name: 'Button',
+ *   styling: {
+ *     base: 'btn',
+ *     variants: { intent: { primary: 'btn--primary', ghost: 'btn--ghost' } },
+ *     defaults: { intent: 'primary' },
+ *   },
+ * })
+ * ```
+ *
+ * ```vue
+ * <Button intent="ghost" as="a" href="/home">Home</Button>
+ * ```
+ *
+ * Pass `subComponents` to attach named sub-components (`Card.Header`) and `onElement` to run
+ * setup once the real DOM element exists — both purely additive on top of the generated
+ * component.
+ */
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,

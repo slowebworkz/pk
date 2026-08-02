@@ -21,6 +21,27 @@ import {
 } from '../shared'
 import { buildRuntime } from './build-runtime'
 
+/**
+ * Creates a polymorphic React 19 component with praxis-kit contracts applied.
+ *
+ * ```tsx
+ * const Button = createContractComponent({
+ *   tag: 'button',
+ *   name: 'Button',
+ *   styling: {
+ *     base: 'btn',
+ *     variants: { intent: { primary: 'btn--primary', ghost: 'btn--ghost' } },
+ *     defaults: { intent: 'primary' },
+ *   },
+ * })
+ *
+ * <Button intent="ghost" as="a" href="/home">Home</Button>
+ * ```
+ *
+ * `ref` is accepted as a plain prop (React 19) and forwarded to the rendered host element or,
+ * with `asChild`, to the consumer's own element. Pass `subComponents` to attach named
+ * sub-components (`Card.Header`) and `onElement` to run setup once the real DOM element exists.
+ */
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,

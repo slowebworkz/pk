@@ -11,6 +11,12 @@ export type EnforcementOptions<TAllowed extends ElementType = ElementType> = {
    * `@praxis-kit/diagnostics`.
    */
   readonly diagnostics?: Diagnostics | DiagnosticsMode
+  /**
+   * ARIA/accessibility rules evaluated against the resolved tag and props on every render.
+   * Each rule is a function receiving the current context and returning zero or more
+   * violations, some of which can carry an auto-applicable fix (see `createRemoveAttributeRule`
+   * and friends in `praxis-kit/contract`).
+   */
   readonly aria?: readonly AriaRule[]
   /**
    * Rules that need `AriaPolicyEngine`'s fix-application/caching machinery
@@ -22,6 +28,11 @@ export type EnforcementOptions<TAllowed extends ElementType = ElementType> = {
    * misleading `aria` name to get the machinery it needs.
    */
   readonly rules?: readonly AriaRule[]
+  /**
+   * Declares which children are valid, by name, match predicate, and cardinality (e.g. "at
+   * least 1, at most 4 `Button` children"). Open by default — children matching no rule are
+   * still allowed unless `exclusiveChildren` is set.
+   */
   readonly children?: readonly ChildRuleInput[]
   /**
    * When true, only children matching a `children` rule (or text, per `allowText`)
@@ -34,6 +45,11 @@ export type EnforcementOptions<TAllowed extends ElementType = ElementType> = {
    * or any listed rule. Default: true.
    */
   readonly allowText?: boolean
+  /**
+   * Prop transforms composed with the component's own `normalize` (from `FactoryOptions`) and
+   * run before it. Unlike `normalize`, these live in the enforcement bucket because they
+   * typically encode a built-in HTML/ARIA fact rather than component-specific behavior.
+   */
   readonly props?: readonly PropNormalizer[]
   /** Restricts the `as` prop to this set of tags. Violations route through diagnostics. */
   readonly allowedAs?: readonly TAllowed[]

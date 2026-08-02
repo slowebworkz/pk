@@ -22,16 +22,22 @@ export type PolymorphicPropsBase = Readonly<
 
 export type KnownProps = Readonly<PolymorphicPropsBase & UnknownProps>
 
-// Concrete public prop shape of the <Polymorphic> component itself (Polymorphic.svelte) —
-// distinct from KnownProps above, which describes the abstract polymorphic-prop contract
-// rather than this specific component's props (it also carries the runtime bundle).
+/**
+ * Props accepted by `<Polymorphic>`, the component every `createContractComponent` bundle
+ * renders through in the Svelte adapter — distinct from `KnownProps` above, which describes
+ * the abstract polymorphic-prop contract rather than this specific component's props (it also
+ * carries the runtime bundle).
+ */
 export interface PolymorphicComponentProps {
+  /** The contract bundle to render, from `createContractComponent`. */
   bundle: AnyBuiltRuntime
-  // Restricted to strings: <svelte:element> only accepts string tags.
-  // Svelte component `as` values are not supported in this adapter.
+  /** Overrides the default tag. String-only: `<svelte:element>` only accepts string tags. */
   as?: string
+  /** Renders `children` as a snippet receiving the resolved props, instead of the host element. */
   asChild?: boolean
+  /** Caller class, merged with the resolved variant classes. */
   class?: string
+  /** Selects a named preset from `styling.presets`. */
   recipe?: string
   children?: Snippet | Snippet<[UnknownProps]>
   [key: string]: unknown
