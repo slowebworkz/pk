@@ -20,7 +20,6 @@
  * needed at the definition site.
  */
 import { createContractComponent } from 'praxis-kit/react'
-import type { EmptyRecord } from '@praxis-kit/core'
 import { createTailwindPipeline } from 'praxis-kit/tailwind'
 
 const variants = {
@@ -47,7 +46,7 @@ const variants = {
   },
 } as const
 
-export const Box = createContractComponent<'div', EmptyRecord, typeof variants>({
+export const Box = createContractComponent({
   tag: 'div',
   name: 'Box',
   styling: {

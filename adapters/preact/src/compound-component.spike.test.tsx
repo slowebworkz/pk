@@ -79,8 +79,7 @@ describe('subComponents (compound component generation spike)', () => {
     const Plain = createContractComponent({ tag: 'div' as const, name: 'Plain' })
     type Expected = PolymorphicComponent<
       PolymorphicGenerics<'div', EmptyRecord, Readonly<EmptyRecord>>
-    > &
-      EmptyRecord
+    >
     expectTypeOf(Plain).toEqualTypeOf({} as Expected)
 
     expect(() => mount(h(box(Plain), null, h('span', { key: 'x' })))).not.toThrow()

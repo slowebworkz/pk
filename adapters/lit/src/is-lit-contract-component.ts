@@ -1,4 +1,4 @@
-import type { AnyRecord, EmptyRecord, VariantMap } from '@praxis-kit/core'
+import type { AnyRecord, EmptyRecord, NoVariants, VariantMap } from '@praxis-kit/core'
 import { isFunction } from '@praxis-kit/primitive'
 import { LitElement } from 'lit'
 import type { LitContractComponent } from './types'
@@ -15,7 +15,7 @@ import type { LitContractComponent } from './types'
  * `LitElement`, exactly what `createContractComponent` always produces.
  */
 export function isLitContractComponent<
-  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
+  TVariants extends Readonly<VariantMap> = NoVariants,
   TPluginProps extends AnyRecord = EmptyRecord,
 >(value: unknown): value is LitContractComponent<TVariants, TPluginProps> {
   return isFunction(value) && value.prototype instanceof LitElement

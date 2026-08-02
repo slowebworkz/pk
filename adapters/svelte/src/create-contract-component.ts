@@ -4,6 +4,9 @@ import type {
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
+  MergeRecords,
+  NoPreset,
+  NoVariants,
   PolymorphicGenerics,
   RecipeMap,
   VariantMap,
@@ -51,28 +54,40 @@ import type { UnknownProps } from './types'
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,
-  Variants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
-  TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
+  Variants extends Readonly<VariantMap> = NoVariants,
+  TPreset extends RecipeMap<Variants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
   TOptions extends WithChildRules = SvelteFactoryOptions<
     TDefault,
-    Props & ExtractPluginProps<TPlugin>,
+    MergeRecords<Props, ExtractPluginProps<TPlugin>>,
     Variants,
     TPreset
   >,
 >(
   options: SvelteFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> &
     TOptions & { readonly subComponents?: TSubComponents },
-): BuiltRuntime<
-  PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>,
-  TOptions
-> &
-  TSubComponents {
+): MergeRecords<
+  BuiltRuntime<
+    PolymorphicGenerics<
+      TDefault,
+      MergeRecords<Props, ExtractPluginProps<TPlugin>>,
+      Variants,
+      TPreset
+    >,
+    TOptions
+  >,
+  TSubComponents
+> {
   const bundle = buildRuntime(
     options as SvelteFactoryOptions<TDefault, Props, Variants, TPreset> & TOptions,
   ) as unknown as BuiltRuntime<
-    PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset>,
+    PolymorphicGenerics<
+      TDefault,
+      MergeRecords<Props, ExtractPluginProps<TPlugin>>,
+      Variants,
+      TPreset
+    >,
     TOptions
   >
 

@@ -1,4 +1,11 @@
-import type { AnyRecord, EmptyRecord, PolymorphicGenerics, VariantMap } from '@praxis-kit/core'
+import type {
+  AnyRecord,
+  EmptyRecord,
+  MergeRecords,
+  NoVariants,
+  PolymorphicGenerics,
+  VariantMap,
+} from '@praxis-kit/core'
 import type { LitElement } from 'lit'
 
 export type PolymorphicElement<G extends PolymorphicGenerics> = HTMLElement &
@@ -20,12 +27,15 @@ export type ResolvedAttributes = AnyRecord
  * properties are typed via the TVariants parameter.
  */
 export type LitContractComponent<
-  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
+  TVariants extends Readonly<VariantMap> = NoVariants,
   TPluginProps extends AnyRecord = EmptyRecord,
 > = {
-  new (): LitElement & {
-    as: string | undefined
-    recipe: string | undefined
-    praxisClass: string | undefined
-  } & { [K in Extract<keyof TVariants, string>]?: string | null } & TPluginProps
+  new (): MergeRecords<
+    LitElement & {
+      as: string | undefined
+      recipe: string | undefined
+      praxisClass: string | undefined
+    } & { [K in Extract<keyof TVariants, string>]?: string | null },
+    TPluginProps
+  >
 }

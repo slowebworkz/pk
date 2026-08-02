@@ -1,4 +1,4 @@
-import type { AnyRecord, EmptyRecord } from '../primitives'
+import type { AnyRecord, EmptyRecord, NoPluginProps } from '../primitives'
 import type { ClassPipelineOptions } from '../pipeline/class-pipeline-options'
 import type { VariantMap } from '../variants'
 import type { ClassPlugin } from './class-plugin'
@@ -17,9 +17,9 @@ export type AnyClassPluginFactory = ClassPluginFactory<AnyRecord> | undefined
 export type ExtractPluginProps<TPlugin extends AnyClassPluginFactory> =
   TPlugin extends ClassPluginFactory<infer T>
     ? string extends keyof T
-      ? EmptyRecord
+      ? NoPluginProps
       : T
-    : EmptyRecord
+    : NoPluginProps
 
 export type PluginInstance<TPlugin extends AnyClassPluginFactory> =
   TPlugin extends ClassPluginFactory<infer TProps> ? ClassPlugin<TProps> : undefined

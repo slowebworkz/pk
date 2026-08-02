@@ -1,8 +1,8 @@
 import type {
   AnyClassPluginFactory,
   ElementType as CoreElementType,
-  EmptyRecord,
   FactoryOptions,
+  NoPreset,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
@@ -12,7 +12,7 @@ export type PreactFactoryOptions<
   TDefault extends CoreElementType,
   Props extends UnknownProps,
   Variants extends Readonly<VariantMap>,
-  TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
+  TPreset extends RecipeMap<Variants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
 > = FactoryOptions<TDefault, Props, Variants, TPreset, TPlugin> & {
   /** Component used to render the asChild slot. Defaults to the built-in Slot. */

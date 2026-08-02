@@ -4,6 +4,9 @@ import type {
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
+  MergeRecords,
+  NoPreset,
+  NoVariants,
   PolymorphicGenerics,
   RecipeMap,
   VariantMap,
@@ -45,8 +48,8 @@ import { buildRuntime } from './build-runtime'
 export function createContractComponent<
   TDefault extends ElementType,
   Props extends UnknownProps = EmptyRecord,
-  Variants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
-  TPreset extends RecipeMap<Variants> = Readonly<EmptyRecord>,
+  Variants extends Readonly<VariantMap> = NoVariants,
+  TPreset extends RecipeMap<Variants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends ElementType = ElementType,
   TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
@@ -54,10 +57,18 @@ export function createContractComponent<
   options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed> & {
     readonly subComponents?: TSubComponents
   },
-): PolymorphicComponent<
-  PolymorphicGenerics<TDefault, Props & ExtractPluginProps<TPlugin>, Variants, TPreset, TAllowed>
-> &
-  TSubComponents {
+): MergeRecords<
+  PolymorphicComponent<
+    PolymorphicGenerics<
+      TDefault,
+      MergeRecords<Props, ExtractPluginProps<TPlugin>>,
+      Variants,
+      TPreset,
+      TAllowed
+    >
+  >,
+  TSubComponents
+> {
   invariant(isReactFactoryOptions(options), 'options is not a valid ReactFactoryOptions object')
   const bundle = buildRuntime(options)
   const { onElement } = options
@@ -98,7 +109,7 @@ export function createContractComponent<
 
   type G = PolymorphicGenerics<
     TDefault,
-    Props & ExtractPluginProps<TPlugin>,
+    MergeRecords<Props, ExtractPluginProps<TPlugin>>,
     Variants,
     TPreset,
     TAllowed
@@ -108,5 +119,10 @@ export function createContractComponent<
     'Generated component failed to satisfy the PolymorphicComponent shape',
   )
 
-  return assembled
+  // MergeRecords is a conditional type. While these generics are still open, TypeScript cannot
+  // prove that the assembled value satisfies the same conditional expression used by the
+  // declared return type. Once the generics are instantiated at a call site, the conditional
+  // simplifies correctly. The invariant above validates the runtime shape; this assertion
+  // bridges the gap in the compiler's type reasoning.
+  return assembled as MergeRecords<PolymorphicComponent<G>, TSubComponents>
 }

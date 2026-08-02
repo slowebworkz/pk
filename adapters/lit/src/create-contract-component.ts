@@ -11,6 +11,9 @@ import type {
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
+  MergeRecords,
+  NoPreset,
+  NoVariants,
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
@@ -46,15 +49,15 @@ import type { LitContractComponent, LitFactoryOptions, UnknownProps } from './ty
 export function createContractComponent<
   TDefault extends ElementType,
   TProps extends UnknownProps = EmptyRecord,
-  TVariants extends Readonly<VariantMap> = Readonly<EmptyRecord>,
-  TPreset extends RecipeMap<TVariants> = Readonly<EmptyRecord>,
+  TVariants extends Readonly<VariantMap> = NoVariants,
+  TPreset extends RecipeMap<TVariants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
 >(
   options: LitFactoryOptions<TDefault, TProps, TVariants, TPreset, TPlugin> & {
     readonly subComponents?: TSubComponents
   },
-): LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> & TSubComponents {
+): MergeRecords<LitContractComponent<TVariants, ExtractPluginProps<TPlugin>>, TSubComponents> {
   invariant(isLitFactoryOptions(options), 'options is not a valid LitFactoryOptions object')
   const bundle = buildRuntime(options)
   const looseBundle = toLooseBundle(bundle)
@@ -233,6 +236,8 @@ export function createContractComponent<
   // TVariants/TPlugin are erased at runtime and can't be checked by any
   // guard — the check above already proves the class shape genuinely, this
   // just bridges the erased generics onto the specific public type.
-  return assembled as unknown as LitContractComponent<TVariants, ExtractPluginProps<TPlugin>> &
+  return assembled as unknown as MergeRecords<
+    LitContractComponent<TVariants, ExtractPluginProps<TPlugin>>,
     TSubComponents
+  >
 }
