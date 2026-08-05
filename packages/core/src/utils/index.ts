@@ -1,4 +1,11 @@
-export { assertNever, cn, mergeProps } from '@praxis-kit/primitive'
+export {
+  assertNever,
+  cn,
+  createObservable,
+  mergeProps,
+  wrapMethodForDetection,
+} from '@praxis-kit/primitive'
+export type { Observable, WrappedMethod } from '@praxis-kit/primitive'
 export {
   activeProps,
   disabledProps,

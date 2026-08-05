@@ -1,5 +1,6 @@
 import type {
   AnyClassPluginFactory,
+  ElementForTag,
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
@@ -47,7 +48,7 @@ export function createContractComponent<
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends ElementType = ElementType,
 >(options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed>) {
-  const bundle = buildRuntime(options as ReactFactoryOptions<TDefault, Props, Variants, TPreset>)
+  const bundle = buildRuntime(options)
   const { onElement } = options
 
   // React 18: ref is not available as a plain prop — forwardRef is required.
@@ -69,8 +70,18 @@ export function createContractComponent<
     const onElementRef = useCallback((el: Element | null) => {
       if (!onElement) return
       if (el) {
+        // Defensive: React currently always calls this ref with `null` before a replacement
+        // element, but that ordering isn't part of the formal callback-ref contract — clean up
+        // any existing registration first so a hypothetical el→el invocation can't leak one.
+        cleanupRef.current?.()
+        // The real element's actual tag is only known at runtime (`tag` default or a consumer's
+        // `as` override); `onElement`'s parameter type narrows that per-component via `TDefault`/
+        // `TAllowed`, which the DOM ref API itself can't express — see `FactoryOptions.onElement`.
         cleanupRef.current =
-          onElement(el, () => propsRef.current as unknown as Readonly<Props>) ?? undefined
+          onElement(
+            el as ElementForTag<TDefault | TAllowed>,
+            () => propsRef.current as unknown as Readonly<Props>,
+          ) ?? undefined
       } else {
         cleanupRef.current?.()
         cleanupRef.current = undefined

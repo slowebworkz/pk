@@ -4,6 +4,7 @@ export type {
   ClassName,
   DefaultProps,
   DefaultVariants,
+  ElementForTag,
   ElementType,
   EmptyRecord,
   IntrinsicProps,

@@ -102,7 +102,14 @@ export function createContractComponent<
             }
             boundElement = element
             if (element) {
-              cleanup = onElement(element, () => attrs as unknown as Readonly<Props>) ?? undefined
+              // The real element's actual tag is only known at runtime; `onElement`'s parameter
+              // type narrows that per-component via `TDefault`/`allowed`, which Vue's function-ref
+              // contract itself can't express — see `FactoryOptions.onElement`.
+              cleanup =
+                onElement(
+                  element as Parameters<NonNullable<typeof onElement>>[0],
+                  () => attrs as unknown as Readonly<Props>,
+                ) ?? undefined
             }
           }
         : undefined

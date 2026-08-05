@@ -1,4 +1,10 @@
-import type { ElementType, PolymorphicGenerics, RecipeMap, VariantMap } from '@praxis-kit/core'
+import type {
+  AnyClassPluginFactory,
+  ElementType,
+  PolymorphicGenerics,
+  RecipeMap,
+  VariantMap,
+} from '@praxis-kit/core'
 import type { BuiltRuntime, ReactFactoryOptions, UnknownProps } from '../shared'
 import { buildRuntime as buildRuntimeShared } from '../shared'
 import { Slot } from './slot'
@@ -11,8 +17,9 @@ export function buildRuntime<
   Props extends UnknownProps,
   Variants extends Readonly<VariantMap>,
   TPreset extends RecipeMap<Variants>,
+  TAllowed extends ElementType = ElementType,
 >(
-  options: ReactFactoryOptions<TDefault, Props, Variants, TPreset>,
-): BuiltRuntime<PolymorphicGenerics<TDefault, Props, Variants, TPreset>> {
+  options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, AnyClassPluginFactory, TAllowed>,
+): BuiltRuntime<PolymorphicGenerics<TDefault, Props, Variants, TPreset, TAllowed>> {
   return buildRuntimeShared(options, Slot, normalizeChildren)
 }

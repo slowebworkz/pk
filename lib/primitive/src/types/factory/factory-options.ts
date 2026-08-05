@@ -1,6 +1,7 @@
 import type { Diagnostics } from '@praxis-kit/diagnostics'
 import type {
   AnyRecord,
+  ElementForTag,
   ElementType,
   EmptyRecord,
   IntrinsicProps,
@@ -73,11 +74,24 @@ export type FactoryOptions<
    * no prop-based equivalent), not for anything expressible as a plain
    * prop.
    *
+   * `element` is typed to the real DOM interface of every tag the rendered
+   * element could actually be — `TDefault` plus whatever `enforcement.allowed`
+   * permits via `as` (`HTMLDialogElement` for `tag: 'dialog'`,
+   * `HTMLDetailsElement` for `tag: 'details'`, and so on) — no cast needed to
+   * reach tag-specific members. A component that leaves `allowed`
+   * unconstrained (any tag reachable via `as`) falls back to `HTMLElement`,
+   * which still covers members every element shares (`showPopover()` and
+   * friends); restrict `enforcement.allowed` to the tags `onElement`
+   * actually knows how to handle to get real narrowing.
+   *
    * `getProps` returns the instance's *current* resolved props at call
    * time — read it from inside a listener registered once at mount, rather
    * than re-subscribing on every prop change.
    *
    * Return a cleanup function to run when the instance unmounts.
    */
-  readonly onElement?: (element: Element, getProps: () => Readonly<Props>) => void | (() => void)
+  readonly onElement?: (
+    element: ElementForTag<TDefault | TAllowed>,
+    getProps: () => Readonly<Props>,
+  ) => void | (() => void)
 }

@@ -89,9 +89,18 @@ export function createContractComponent<
     const onElementRef = useCallback((el: unknown) => {
       if (!onElement) return
       if (el) {
+        // Defensive: Preact currently always calls this ref with `null` before a replacement
+        // element, but that ordering isn't part of the formal callback-ref contract — clean up
+        // any existing registration first so a hypothetical el→el invocation can't leak one.
+        cleanupRef.current?.()
+        // The real element's actual tag is only known at runtime; `onElement`'s parameter type
+        // narrows that per-component via `TDefault`/`allowed`, which the DOM ref API itself
+        // can't express — see `FactoryOptions.onElement`.
         cleanupRef.current =
-          onElement(el as Element, () => propsRef.current as unknown as Readonly<Props>) ??
-          undefined
+          onElement(
+            el as Parameters<NonNullable<typeof onElement>>[0],
+            () => propsRef.current as unknown as Readonly<Props>,
+          ) ?? undefined
       } else {
         cleanupRef.current?.()
         cleanupRef.current = undefined

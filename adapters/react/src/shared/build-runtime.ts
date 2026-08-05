@@ -1,4 +1,6 @@
 import type {
+  AllowedOf,
+  AnyClassPluginFactory,
   DefaultOf,
   ElementType,
   PolymorphicGenerics,
@@ -25,7 +27,14 @@ import type {
 import { SlotValidator } from './slot'
 
 function normalizeOptions<G extends PolymorphicGenerics>(
-  options: ReactFactoryOptions<DefaultOf<G>, PropsOf<G>, VariantsOf<G>, RecipeOf<G>>,
+  options: ReactFactoryOptions<
+    DefaultOf<G>,
+    PropsOf<G>,
+    VariantsOf<G>,
+    RecipeOf<G>,
+    AnyClassPluginFactory,
+    AllowedOf<G>
+  >,
   defaultSlotComponent: SlotComponent,
 ): NormalizedOptions<G> {
   return {
@@ -48,12 +57,13 @@ export function buildRuntime<
   Props extends UnknownProps,
   Variants extends Readonly<VariantMap>,
   TPreset extends RecipeMap<Variants>,
+  TAllowed extends ElementType = ElementType,
 >(
-  options: ReactFactoryOptions<TDefault, Props, Variants, TPreset>,
+  options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, AnyClassPluginFactory, TAllowed>,
   defaultSlotComponent: SlotComponent,
   normalizeChildren: NormalizeChildren,
-): BuiltRuntime<PolymorphicGenerics<TDefault, Props, Variants, TPreset>> {
-  type G = PolymorphicGenerics<TDefault, Props, Variants, TPreset>
+): BuiltRuntime<PolymorphicGenerics<TDefault, Props, Variants, TPreset, TAllowed>> {
+  type G = PolymorphicGenerics<TDefault, Props, Variants, TPreset, TAllowed>
   const normalized = normalizeOptions<G>(options, defaultSlotComponent)
   const { runtime, ownedKeys } = buildCoreRuntime<G>(normalized)
   const { childrenEvaluator } = buildEngines(
