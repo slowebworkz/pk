@@ -86,7 +86,13 @@ export function createContractComponent<
             const consumerRef = (props as { ref?: unknown }).ref
             return (el: Element) => {
               if (typeof consumerRef === 'function') (consumerRef as (e: Element) => void)(el)
-              const cleanup = onElement(el, () => props as unknown as Readonly<Props>)
+              // The real element's actual tag is only known at runtime; `onElement`'s parameter
+              // type narrows that per-component via `TDefault`/`allowed`, which Solid's ref
+              // contract itself can't express — see `FactoryOptions.onElement`.
+              const cleanup = onElement(
+                el as Parameters<NonNullable<typeof onElement>>[0],
+                () => props as unknown as Readonly<Props>,
+              )
               if (cleanup) onCleanup(cleanup)
             }
           },

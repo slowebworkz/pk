@@ -9,7 +9,7 @@ import type {
   SubComponentMap,
 } from '../any-record'
 import type { AnyFunction } from '../any-function'
-import type { ElementType } from '../element-type'
+import type { ElementForTag, ElementType } from '../element-type'
 import type { Factory, UnaryFn } from '../function-types'
 import type { IntrinsicTag } from '../intrinsic-tag'
 import type { AnyRef, RefCallback, RefObject } from '../ref'
@@ -26,7 +26,7 @@ export type {
   SubComponentMap,
 }
 export type { AnyFunction }
-export type { ElementType }
+export type { ElementForTag, ElementType }
 export type { Factory, UnaryFn }
 export type { IntrinsicTag }
 export type { AnyRef, RefCallback, RefObject }

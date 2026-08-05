@@ -1,6 +1,7 @@
 import type {
   AnyClassPluginFactory,
   AnyRecord,
+  ElementForTag,
   ElementType,
   EmptyRecord,
   ExtractPluginProps,
@@ -71,25 +72,48 @@ export function createContractComponent<
 > {
   invariant(isReactFactoryOptions(options), 'options is not a valid ReactFactoryOptions object')
   const bundle = buildRuntime(options)
+  /** Captured once from the factory options so the callback ref below can remain stable. */
   const { onElement } = options
 
   function Component({ ref, ...props }: UnknownProps & { ref?: Ref<unknown> }) {
-    // Keep current on every render so the stable callback ref can always read the latest
-    // props via getProps() without re-registering.
+    /**
+     * Keep current on every render so the stable callback ref can always read the latest
+     * props via getProps() without re-registering.
+     */
     const propsRef = useRef(props)
     propsRef.current = props
     const cleanupRef = useRef<(() => void) | undefined>(undefined)
 
-    // `onElement` originates from the options object closed over by createContractComponent,
-    // not from props, so it's static for the component's lifetime — this callback intentionally
-    // stays stable across renders. React only re-invokes a stable callback ref when the
-    // underlying element instance changes (mount, replacement, or unmount), so onElement is
-    // registered once for each mounted element, regardless of how many times Component re-renders.
+    /**
+     * `onElement` originates from the options object closed over by createContractComponent,
+     * not from props, so it's static for the component's lifetime — this callback intentionally
+     * stays stable across renders. React only re-invokes a stable callback ref when the
+     * underlying element instance changes (mount, replacement, or unmount), so onElement is
+     * registered once for each mounted element, regardless of how many times Component re-renders.
+     */
     const onElementRef = useCallback((el: Element | null) => {
       if (!onElement) return
       if (el) {
+        /**
+         * Defensive: React currently always calls this ref with `null` before a replacement
+         * element, but that ordering isn't part of the formal callback-ref contract — clean up
+         * any existing registration first so a hypothetical el→el invocation can't leak one.
+         * Cleared right after invoking, not left to be overwritten below, so a subsequent
+         * `onElement(...)` throw doesn't leave a stale, already-invoked cleanup in place to be
+         * run a second time on unmount.
+         */
+        cleanupRef.current?.()
+        cleanupRef.current = undefined
+        /**
+         * The real element's actual tag is only known at runtime (`tag` default or a consumer's
+         * `as` override); `onElement`'s parameter type narrows that per-component via `TDefault`/
+         * `TAllowed`, which the DOM ref API itself can't express — see `FactoryOptions.onElement`.
+         */
         cleanupRef.current =
-          onElement(el, () => propsRef.current as unknown as Readonly<Props>) ?? undefined
+          onElement(
+            el as ElementForTag<TDefault | TAllowed>,
+            () => propsRef.current as unknown as Readonly<Props>,
+          ) ?? undefined
       } else {
         cleanupRef.current?.()
         cleanupRef.current = undefined
@@ -119,10 +143,12 @@ export function createContractComponent<
     'Generated component failed to satisfy the PolymorphicComponent shape',
   )
 
-  // MergeRecords is a conditional type. While these generics are still open, TypeScript cannot
-  // prove that the assembled value satisfies the same conditional expression used by the
-  // declared return type. Once the generics are instantiated at a call site, the conditional
-  // simplifies correctly. The invariant above validates the runtime shape; this assertion
-  // bridges the gap in the compiler's type reasoning.
+  /**
+   * MergeRecords is a conditional type. While these generics are still open, TypeScript cannot
+   * prove that the assembled value satisfies the same conditional expression used by the
+   * declared return type. Once the generics are instantiated at a call site, the conditional
+   * simplifies correctly. The invariant above validates the runtime shape; this assertion
+   * bridges the gap in the compiler's type reasoning.
+   */
   return assembled as MergeRecords<PolymorphicComponent<G>, TSubComponents>
 }

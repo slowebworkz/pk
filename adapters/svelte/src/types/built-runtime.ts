@@ -1,4 +1,11 @@
-import type { ChildrenEvaluator, PolymorphicGenerics, PropsOf } from '@praxis-kit/core'
+import type {
+  AllowedOf,
+  ChildrenEvaluator,
+  DefaultOf,
+  ElementForTag,
+  PolymorphicGenerics,
+  PropsOf,
+} from '@praxis-kit/core'
 import type {
   BuiltChildrenEvaluator,
   SlotValidator,
@@ -9,9 +16,11 @@ import type { Runtime, TypedRuntime } from './runtime'
 
 export type { WithChildRules, BuiltChildrenEvaluator }
 
-export type OnElementFn<Props = unknown> = (
-  element: Element,
-  getProps: () => Readonly<Props>,
+// `element` is typed to every tag `G`'s default/allowed `as` could actually render — see
+// `FactoryOptions.onElement` in @praxis-kit/primitive for the full rationale.
+export type OnElementFn<G extends PolymorphicGenerics = PolymorphicGenerics> = (
+  element: ElementForTag<DefaultOf<G> | AllowedOf<G>>,
+  getProps: () => Readonly<PropsOf<G>>,
 ) => void | (() => void)
 
 export type BuiltRuntime<
@@ -21,7 +30,7 @@ export type BuiltRuntime<
   runtime: TypedRuntime<G>
   filterProps: FilterPredicate
   slotValidator: SlotValidator
-  onElement?: OnElementFn<PropsOf<G>>
+  onElement?: OnElementFn<G>
 }
 
 // Structural alias used when generic precision is not needed (e.g. as a prop type).
