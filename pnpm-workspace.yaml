@@ -61,7 +61,7 @@ catalog:
 
   # Lit
   lit: ^3.0.0
-  preact: ^10.25.0
+  preact: ^10.29.8
   preact-render-to-string: ^6.5.0
   prettier: ^3.8.4
 
