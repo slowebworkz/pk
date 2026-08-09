@@ -32,4 +32,8 @@ export {
   inputAccessibleNameRule,
   passwordAutocompleteRule,
   requiredReadOnlyConflictRule,
+  ANCHOR_RULES,
+  dangerousHrefRule,
+  roleButtonWithHrefRule,
+  ariaDisabledInertRule,
 } from '@praxis-kit/core'

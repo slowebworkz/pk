@@ -2,6 +2,7 @@ import type { AriaContext, AriaFix, AriaResult, AriaRule } from '../types'
 import type { HtmlTags } from './contracts/types'
 import { AriaDiagnostics, HtmlDiagnostics } from '@praxis-kit/contract'
 import { LANDMARK_TAGS } from './contracts/categories'
+import { ANCHOR_RULES } from './anchor-rules'
 import { INPUT_RULES } from './input-rules'
 import { roleNotPermittedRule } from './role-restrictions'
 
@@ -84,4 +85,5 @@ export const HTML_ARIA_RULES: readonly AriaRule[] = [
   landmarkAccessibleNameRule,
   roleNotPermittedRule,
   ...INPUT_RULES,
+  ...ANCHOR_RULES,
 ]

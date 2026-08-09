@@ -9,6 +9,12 @@ export {
 } from './aria-rules'
 export { roleNotPermittedRule } from './role-restrictions'
 export {
+  ANCHOR_RULES,
+  dangerousHrefRule,
+  roleButtonWithHrefRule,
+  ariaDisabledInertRule,
+} from './anchor-rules'
+export {
   INPUT_RULES,
   supportedInputTypeRule,
   checkedRequiresCheckableTypeRule,
