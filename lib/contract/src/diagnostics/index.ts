@@ -1,3 +1,4 @@
+export { AnchorAccessibilityDiagnostics } from './anchor-accessibility'
 export { AriaDiagnostics } from './aria'
 export { ContractDiagnostics } from './contract'
 export { HtmlDiagnostics } from './html'

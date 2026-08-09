@@ -70,11 +70,16 @@ export enum DiagnosticCode {
   HtmlInputHeightIgnoredForType = 'HTML3114',
   HtmlInputWidthIgnoredForType = 'HTML3115',
 
+  // HTML — <a> (3200–3299)
+  HtmlAnchorDangerousHref = 'HTML3201',
+
   // Accessibility (best-practice advisories, not HTML/ARIA validity facts)
   A11yInputMissingAccessibleName = 'A11Y8100',
   A11yInputPlaceholderNotLabel = 'A11Y8101',
   A11yInputPasswordAutocomplete = 'A11Y8102',
   A11yInputRequiredReadOnlyConflict = 'A11Y8103',
+  A11yAnchorRoleButtonWithHref = 'A11Y8200',
+  A11yAnchorAriaDisabledInert = 'A11Y8201',
 
   // Rendering
   InvalidRenderingTarget = 'RENDER4001',

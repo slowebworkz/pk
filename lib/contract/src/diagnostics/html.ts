@@ -145,4 +145,18 @@ export const HtmlDiagnostics = {
       }
     },
   },
+
+  // Reserved for <a>-specific facts (HTML3201–3299, see codes.ts).
+  anchor: {
+    dangerousHref(href: string): Fact {
+      return {
+        code: DiagnosticCode.HtmlAnchorDangerousHref,
+        category: DiagnosticCategory.HTML,
+        severity: 'warning',
+        message: `href="${href}" uses a scheme that executes attacker-controlled content when navigated to. It has been removed.`,
+        rationale:
+          '"javascript:", "data:", and "vbscript:" URLs are a common XSS vector when href comes from untrusted input — none of the three are needed for legitimate navigation.',
+      }
+    },
+  },
 }
