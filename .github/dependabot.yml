@@ -22,3 +22,10 @@ updates:
         patterns:
           - "react*"
           - "@types/react*"
+
+    ignore:
+      # TS 7 breaks plugins/typescript's tsserverlibrary import and the CommonJS build's
+      # moduleResolution setup; tsdown also flags TS 7's API as unstable. See CLAUDE.md.
+      # Drop this once TS 7 is confirmed working here.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
