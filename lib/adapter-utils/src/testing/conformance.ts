@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import type { ConformanceAdapter, ConformanceComponent } from './types'
+import type { ConformanceAdapter, ConformanceComponent } from '../types'
 import { throwDiagnostics, warnDiagnostics, silentDiagnostics } from '@praxis-kit/diagnostics'
 import { dynamic } from '@praxis-kit/primitive'
 export type {
@@ -10,7 +10,7 @@ export type {
   ConformanceFactoryOptions,
   ConformanceRef,
   RenderResult,
-} from './types'
+} from '../types'
 
 export function conformanceSuite<C extends ConformanceComponent = ConformanceComponent>(
   adapter: ConformanceAdapter<C>,

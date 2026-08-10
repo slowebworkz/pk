@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { ConformanceAdapter, ConformanceComponent } from './types'
+import type { ConformanceAdapter, ConformanceComponent } from '../types'
 import { silentDiagnostics } from '@praxis-kit/diagnostics'
 
 /**

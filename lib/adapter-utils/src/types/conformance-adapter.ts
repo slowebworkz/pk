@@ -1,62 +1,8 @@
-import type {
-  AnyRecord,
-  ChildRuleContext,
-  FactoryOptions,
-  Rule,
-  VariantMap,
-} from '@praxis-kit/core'
-import type { StringMap } from '@praxis-kit/primitive'
-import type { Diagnostics } from '@praxis-kit/diagnostics'
-
-/**
- * A maximally-wide FactoryOptions shape used as the bridge cast in adapter
- * conformance tests. ConformanceFactoryOptions uses simplified field types
- * (e.g. `defaults?: Record<string, string>`) that don't satisfy FactoryOptions'
- * constrained generics (`Partial<VariantProps<V>>`, `TPreset extends RecipeMap<V>`).
- * Casting through this alias makes the intent explicit rather than using
- * `Parameters<typeof createContractComponent>[0]`.
- */
-export type BareFactoryOptions = FactoryOptions<string, AnyRecord, Readonly<VariantMap>>
-
-// Component returned by createComponent — must carry displayName.
-export type ConformanceComponent = { displayName?: string }
-
-// Mutable ref object — same shape as React.createRef / Preact.createRef.
-export type ConformanceRef = { current: HTMLElement | null }
-
-export type ChildSpec =
-  | { tag: string; props?: AnyRecord; children?: ChildSpec[] }
-  | { component: ConformanceComponent; props?: AnyRecord; children?: ChildSpec[] }
-
-export type RenderResult = {
-  /** The current root DOM element. Always reflects the latest render/rerender. */
-  readonly element: HTMLElement
-  /** Re-render the same component with new props and/or children. */
-  rerender(props?: AnyRecord, children?: ChildSpec[]): void
-  /** Unmount the component from the DOM. */
-  unmount(): void
-}
-
-export type ConformanceFactoryOptions = {
-  tag?: string
-  name?: string
-  styling?: {
-    base?: string
-    variants?: StringMap<StringMap<string>>
-    defaults?: StringMap<string>
-    compounds?: ReadonlyArray<StringMap<string> & { class: string }>
-    presets?: AnyRecord
-  }
-  filterProps?: (key: string, variantKeys: ReadonlySet<string>) => boolean
-  enforcement?: {
-    diagnostics?: Diagnostics
-    children?: ReadonlyArray<{
-      name: string
-      match: (c: unknown) => c is unknown
-      cardinality?: Rule<{ min?: number; max?: number }, ChildRuleContext>
-    }>
-  }
-}
+import type { AnyRecord } from '@praxis-kit/core'
+import type { ChildSpec } from './child-spec'
+import type { ConformanceComponent, ConformanceRef } from './conformance-component'
+import type { ConformanceFactoryOptions } from './conformance-factory-options'
+import type { RenderResult } from './render-result'
 
 /**
  * Adapter contract for the conformance suite.
@@ -89,8 +35,14 @@ export type ConformanceAdapter<C extends ConformanceComponent = ConformanceCompo
    */
   createRef?(): ConformanceRef
   /**
-   * Declare which optional contracts this adapter satisfies.
+   * Declare which optional *behavioral* contracts this adapter satisfies.
    * Unset fields default to true — only set false to opt out.
+   *
+   * Kept separate from `testSuites` below: these four are properties of how the adapter
+   * actually renders (does asChild work, does the tag change polymorphically, ...) — the
+   * conformance suite itself asserts them. `testSuites` is a different kind of fact (whether a
+   * *separate* test file exists that exercises this adapter at all), not something this suite
+   * verifies by running these same assertions.
    */
   capabilities?: {
     /** false for Solid, which uses a render-function asChild pattern. */
@@ -109,16 +61,6 @@ export type ConformanceAdapter<C extends ConformanceComponent = ConformanceCompo
      */
     domPropFiltering?: boolean
     /**
-     * true if this adapter supports server-side rendering via ssrConformanceSuite.
-     * Informational — wire ssrConformanceSuite separately in a node-environment test file.
-     */
-    ssr?: boolean
-    /**
-     * true if this adapter supports hydration parity via hydrationParitySuite.
-     * Informational — wire hydrationParitySuite separately in a jsdom-environment test file.
-     */
-    hydration?: boolean
-    /**
      * true if this adapter's render path passes a `ChildRuleContext` (resolved
      * tag/props) into `childrenEvaluator.evaluate()`, so a `dynamic(...)`
      * child-rule cardinality (e.g. varying by the resolved `as` tag) is
@@ -126,5 +68,18 @@ export type ConformanceAdapter<C extends ConformanceComponent = ConformanceCompo
      * Unset (default false) — opt in per adapter as each is wired.
      */
     dynamicChildRules?: boolean
+  }
+  /**
+   * Informational only — declares whether a *separate* test file wires this adapter into
+   * `ssrConformanceSuite`/`hydrationParitySuite`. Neither flag is read by this suite or any
+   * other code; nothing here fails if it's unset or wrong. Distinct from `capabilities` because
+   * these aren't behavioral facts this suite verifies by running assertions — they just document,
+   * next to the adapter contract itself, whether that separate coverage exists.
+   */
+  testSuites?: {
+    /** true if this adapter supports server-side rendering via ssrConformanceSuite. */
+    ssr?: boolean
+    /** true if this adapter supports hydration parity via hydrationParitySuite. */
+    hydration?: boolean
   }
 }
