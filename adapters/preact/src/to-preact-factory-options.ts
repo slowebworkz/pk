@@ -6,12 +6,13 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { isFunction, isObject } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import { isFactoryOptionsLike } from '@praxis-kit/adapter-utils'
 import type { PreactFactoryOptions } from './preact-options'
 import type { UnknownProps } from './types/primitives'
 
 /** Preact-specific additions on top of `FactoryOptions`. */
-const PREACT_FIELD_VALIDATORS: Record<string, (value: unknown) => boolean> = {
+const PREACT_FIELD_VALIDATORS: StringMap<(value: unknown) => boolean> = {
   slotComponent: (v) => v === undefined || isFunction(v) || isObject(v),
   filterProps: (v) => v === undefined || isFunction(v),
 }

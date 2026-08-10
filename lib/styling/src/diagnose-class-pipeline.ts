@@ -1,9 +1,10 @@
 import type { AnyRecord, ClassPipelineOptions, VariantConditionValue, VariantMap } from './types'
 import { cva } from './cva'
 import { cn, iterate } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 
 export type CompoundTrace = {
-  conditions: Record<string, VariantConditionValue>
+  conditions: StringMap<VariantConditionValue>
   class: string | string[]
   fired: boolean
   mismatches: Array<{ key: string; expected: VariantConditionValue; got: unknown }>
@@ -41,7 +42,7 @@ export function diagnoseClassPipeline<TVariants extends VariantMap>(
     typeof tag === 'string' && options.tagMap ? (options.tagMap[tag] ?? null) : null
   const tagMapClass = Array.isArray(rawTagMapClass) ? rawTagMapClass.join(' ') : rawTagMapClass
 
-  const recipeMap = (options.recipeMap as Record<string, AnyRecord> | undefined) ?? {}
+  const recipeMap = (options.recipeMap as StringMap<AnyRecord> | undefined) ?? {}
   const presetValues: AnyRecord | null = recipe !== undefined ? (recipeMap[recipe] ?? null) : null
 
   const defaults = (options.defaultVariants as AnyRecord | undefined) ?? {}
@@ -51,7 +52,7 @@ export function diagnoseClassPipeline<TVariants extends VariantMap>(
   const rawCompounds = (options.compoundVariants as ReadonlyArray<AnyRecord>) ?? []
   const compounds: CompoundTrace[] = rawCompounds.map((compound) => {
     const { class: cls, ...conditions } = compound
-    const typedConditions = conditions as Record<string, VariantConditionValue>
+    const typedConditions = conditions as StringMap<VariantConditionValue>
     const mismatches: CompoundTrace['mismatches'] = []
 
     iterate.forEachEntry(typedConditions, (key, expected) => {

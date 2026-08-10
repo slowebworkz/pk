@@ -6,12 +6,13 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { isFunction, isObject } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import { isFactoryOptionsLike } from '@praxis-kit/adapter-utils'
 import type { ReactFactoryOptions } from './react-options'
 import type { UnknownProps } from './types'
 
 /** React-specific additions on top of `FactoryOptions`. */
-const REACT_FIELD_VALIDATORS: Record<string, (value: unknown) => boolean> = {
+const REACT_FIELD_VALIDATORS: StringMap<(value: unknown) => boolean> = {
   slotComponent: (v) => v === undefined || isFunction(v) || isObject(v),
   filterProps: (v) => v === undefined || isFunction(v),
   artifact: (v) => v === undefined || isObject(v),

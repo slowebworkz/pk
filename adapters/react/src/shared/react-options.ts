@@ -7,13 +7,14 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import type { ComponentDefinition } from '@praxis-kit/runtime'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { UnknownProps, SlotComponent } from './types'
 
 /** Structural subset of `CompiledComponentArtifact` consumed by the React adapter. */
 export interface CompiledArtifact {
   readonly definition: ComponentDefinition
   readonly precomputed?: {
-    readonly variantLookup?: Record<string, string>
+    readonly variantLookup?: StringMap<string>
   }
 }
 

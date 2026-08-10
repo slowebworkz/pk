@@ -1,20 +1,21 @@
 import type { AnyRecord } from './types'
 import { iterate, LRUCache } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 
 type CvaFn = (props: AnyRecord) => string
 
 export class VariantClassResolver {
   readonly #cvaFn: CvaFn | null
-  readonly #recipeMap: Readonly<Record<string, AnyRecord>>
+  readonly #recipeMap: Readonly<StringMap<AnyRecord>>
   readonly #variantKeys: ReadonlySet<string> | null
-  readonly #precomputedClasses: Readonly<Record<string, string>> | null
+  readonly #precomputedClasses: Readonly<StringMap<string>> | null
   readonly #cache = new LRUCache<string, string>(1000)
 
   constructor(
     cvaFn: CvaFn | null,
-    recipeMap?: Record<string, AnyRecord>,
+    recipeMap?: StringMap<AnyRecord>,
     variantKeys?: ReadonlySet<string>,
-    precomputedClasses?: Readonly<Record<string, string>>,
+    precomputedClasses?: Readonly<StringMap<string>>,
   ) {
     this.#cvaFn = cvaFn ?? null
     this.#recipeMap = Object.freeze(recipeMap ?? {})

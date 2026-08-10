@@ -9,15 +9,16 @@ import { readdir, readFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
+import type { StringMap } from '@praxis-kit/primitive'
 
 const pkg = dirname(fileURLToPath(import.meta.url))
 const distDir = join(pkg, '../dist')
 const scenariosDir = join(pkg, '../scenarios')
 const snapshotPath = join(pkg, '../snapshots/gzip.json')
 
-type OutputInputs = Record<string, { bytesInOutput: number }>
-type Metafile = { outputs: Record<string, { inputs: OutputInputs }> }
-type Snapshot = Record<string, { gzip: number }>
+type OutputInputs = StringMap<{ bytesInOutput: number }>
+type Metafile = { outputs: StringMap<{ inputs: OutputInputs }> }
+type Snapshot = StringMap<{ gzip: number }>
 
 const scenarios = await readdir(scenariosDir, { withFileTypes: true }).then((entries) =>
   entries.filter((e) => e.isDirectory()).map((e) => e.name),

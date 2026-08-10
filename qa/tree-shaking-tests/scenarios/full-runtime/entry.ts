@@ -9,6 +9,7 @@ import type { ReactElement } from 'react'
 import { warnDiagnostics } from '@praxis-kit/diagnostics'
 import { createContractComponent } from '@praxis-kit/react'
 import type { AriaRule } from '@praxis-kit/core/contract'
+import type { StringMap } from '@praxis-kit/primitive'
 
 const requireLabel: AriaRule = ({ props }) =>
   'aria-label' in props || 'aria-labelledby' in props
@@ -29,7 +30,7 @@ const variants = {
 
 const Item = createContractComponent({ tag: 'li', name: 'Item' })
 
-export const Button = createContractComponent<'button', Record<string, never>, typeof variants>({
+export const Button = createContractComponent<'button', StringMap<never>, typeof variants>({
   tag: 'button',
   name: 'Button',
   styling: {

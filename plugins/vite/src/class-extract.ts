@@ -38,6 +38,7 @@
 import ts from 'typescript'
 import { asArray, asObject, firstObjectArg, getProperty, isFactoryCall, walk } from './ast'
 import { iterate } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { CompoundEntry, DefaultMap, StylingConfig, VariantMap } from './types'
 
 // Cap to keep injected code size reasonable.
@@ -141,7 +142,7 @@ function extractCompounds(stylingObj: ts.ObjectLiteralExpression): CompoundEntry
     const cls = asStringOrStringArray(getProperty(obj, 'class'))
     if (cls === undefined) return false
 
-    const conditions: Record<string, string | string[]> = {}
+    const conditions: StringMap<string | string[]> = {}
     const keyOrVNotDefined = iterate.every(obj.properties, (cp) => {
       const key = propKey(cp)
       if (!key || !ts.isPropertyAssignment(cp)) return false
@@ -168,9 +169,7 @@ function extractCompounds(stylingObj: ts.ObjectLiteralExpression): CompoundEntry
  * Enumerates every subset of variant props (each dimension either absent or set
  * to one of its declared values). Returns null if total would exceed MAX_COMBINATIONS.
  */
-export function enumerateCombinations(
-  variantMap: VariantMap,
-): Array<Record<string, string>> | null {
+export function enumerateCombinations(variantMap: VariantMap): Array<StringMap<string>> | null {
   const keys = Object.keys(variantMap)
   if (keys.length === 0) return [{}]
 
@@ -181,13 +180,13 @@ export function enumerateCombinations(
   })
   if (!totalUnderMaxLimit) return null
 
-  function enumerateRecursive(remaining: string[]): Array<Record<string, string>> {
+  function enumerateRecursive(remaining: string[]): Array<StringMap<string>> {
     if (remaining.length === 0) return [{}]
     const first = remaining[0] as string
     const rest = remaining.slice(1)
     const restCombos = enumerateRecursive(rest)
     const valueKeys = Object.keys(variantMap[first]!)
-    const out: Array<Record<string, string>> = []
+    const out: Array<StringMap<string>> = []
     iterate.forEach(restCombos, (combo) => {
       out.push(combo)
       iterate.forEach(valueKeys, (v) => {
@@ -206,7 +205,7 @@ export function enumerateCombinations(
  * Builds the VariantClassResolver cache key for a given explicit prop combination.
  * Absent variant dimensions are excluded from the key (defaults apply in compute).
  */
-export function buildCacheKey(props: Record<string, string>): string {
+export function buildCacheKey(props: StringMap<string>): string {
   const parts = Object.keys(props)
     .sort()
     .map((k) => `${k}:s:${props[k]}`)
@@ -216,7 +215,7 @@ export function buildCacheKey(props: Record<string, string>): string {
 // ─── Class computation ────────────────────────────────────────────────────────
 
 /** Computes the final class string for a given explicit prop combination against a resolved styling config. */
-function computeClasses(config: StylingConfig, props: Record<string, string>): string {
+function computeClasses(config: StylingConfig, props: StringMap<string>): string {
   const { variantMap, defaults, compounds } = config
   const effective = { ...defaults, ...props }
   const classes: string[] = []
@@ -255,7 +254,7 @@ function computeClasses(config: StylingConfig, props: Record<string, string>): s
  */
 export function buildPrecomputedClasses(
   stylingObj: ts.ObjectLiteralExpression,
-): Record<string, string> | null {
+): StringMap<string> | null {
   if (getProperty(stylingObj, 'precomputedClasses') !== undefined) return null
 
   const variantMap = extractVariantMap(stylingObj)

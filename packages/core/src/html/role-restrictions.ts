@@ -1,5 +1,6 @@
 import type { AriaContext, AriaFix, AriaResult, AriaRole, AriaRule } from '../types'
 import { HtmlDiagnostics } from '@praxis-kit/contract'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { HtmlElementSpec } from './spec/types'
 import { resolveAllowedRoles } from './spec/types'
 import { inputElementSpec } from './spec/elements/input'
@@ -15,7 +16,7 @@ import { tableElementSpec } from './spec/elements/table'
 // This table should be cross-checked against the current W3C ARIA-in-HTML spec before being
 // treated as exhaustive — it was authored from well-established fragments of that spec, not
 // generated from it mechanically.
-const ALLOWED_ROLES: Readonly<Record<string, readonly AriaRole[]>> = {
+const ALLOWED_ROLES: Readonly<StringMap<readonly AriaRole[]>> = {
   article: ['application', 'document', 'feed', 'main', 'none', 'presentation', 'region'],
   aside: ['feed', 'none', 'presentation', 'region', 'search'],
   footer: ['group', 'none', 'presentation'],
@@ -97,7 +98,7 @@ const ALLOWED_ROLES: Readonly<Record<string, readonly AriaRole[]>> = {
 // Tags whose allowed-roles fact is expressed as a spec/elements/*.ts `HtmlElementSpec` rather
 // than a flat entry in `ALLOWED_ROLES` — currently the ones with prop-conditional or non-trivial
 // policies. Tags not in this map fall back to the plain `ALLOWED_ROLES` lookup.
-const ELEMENT_SPECS: Readonly<Record<string, HtmlElementSpec>> = {
+const ELEMENT_SPECS: Readonly<StringMap<HtmlElementSpec>> = {
   input: inputElementSpec,
   img: imgElementSpec,
   table: tableElementSpec,
@@ -105,7 +106,7 @@ const ELEMENT_SPECS: Readonly<Record<string, HtmlElementSpec>> = {
 
 function getAllowedRoles(
   tag: string,
-  props: Readonly<Record<string, unknown>>,
+  props: Readonly<StringMap<unknown>>,
 ): readonly AriaRole[] | undefined {
   const spec = ELEMENT_SPECS[tag]
   if (spec) return resolveAllowedRoles(spec, props)

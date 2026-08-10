@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, it, expect } from 'vitest'
-import type { AnyRecord } from '@praxis-kit/primitive'
+import type { AnyRecord, StringMap } from '@praxis-kit/primitive'
 import { iterate } from '@praxis-kit/primitive'
 import type { ConformanceComponent, ConformanceFactoryOptions } from './types'
 import { silentDiagnostics } from '@praxis-kit/diagnostics'
@@ -25,7 +25,7 @@ export type HydrationConformanceAdapter<C extends ConformanceComponent = Conform
   cleanup(): void
 }
 
-type Attributes = Record<string, string>
+type Attributes = StringMap<string>
 
 function parseAttributes(html: string): Attributes {
   const tpl = document.createElement('template')

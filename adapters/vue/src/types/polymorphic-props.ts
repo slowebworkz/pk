@@ -10,6 +10,7 @@ import type {
   VariantProps,
   VariantsOf,
 } from '@praxis-kit/core'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { UnknownProps } from './primitives'
 
 type ControlProps<G extends PolymorphicGenerics, TAs extends ElementType> = PropsOf<G> &
@@ -71,7 +72,7 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
  */
 export type CompoundComponent<
   G extends PolymorphicGenerics,
-  S extends Readonly<Record<string, PolymorphicGenerics>>,
+  S extends Readonly<StringMap<PolymorphicGenerics>>,
 > = PolymorphicComponent<G> & {
   readonly [K in keyof S]: PolymorphicComponent<S[K]>
 }

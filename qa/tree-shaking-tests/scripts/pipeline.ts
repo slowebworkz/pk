@@ -11,8 +11,9 @@
 
 import { shallowObjectMerge, startPipeline } from '@praxis-kit/pipeline'
 import { runPipeline, shellPass } from '@praxis-kit/pipeline/node'
+import type { StringMap } from '@praxis-kit/primitive'
 
-type Context = Record<string, never>
+type Context = StringMap<never>
 
 const nodeScriptPass = (name: string, script: string) =>
   shellPass<Context>(name, process.execPath, ['--experimental-strip-types', script])

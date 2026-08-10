@@ -1,4 +1,5 @@
 import { isFunction, isObject, isString } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 
 /**
  * Loosely validates one recognized `FactoryOptions` field's runtime shape.
@@ -13,7 +14,7 @@ import { isFunction, isObject, isString } from '@praxis-kit/primitive'
  * additions (React's `slotComponent`/`artifact`, every adapter's own
  * `filterProps`, etc.) are passed in by the caller as extra entries.
  */
-export const FACTORY_OPTIONS_FIELD_VALIDATORS: Record<string, (value: unknown) => boolean> = {
+export const FACTORY_OPTIONS_FIELD_VALIDATORS: StringMap<(value: unknown) => boolean> = {
   tag: (v) => v === undefined || isString(v),
   name: (v) => v === undefined || isString(v),
   defaults: (v) => v === undefined || isObject(v),
@@ -42,7 +43,7 @@ export const FACTORY_OPTIONS_FIELD_VALIDATORS: Record<string, (value: unknown) =
  */
 export function isFactoryOptionsLike<T>(
   options: unknown,
-  extraFieldValidators: Record<string, (value: unknown) => boolean>,
+  extraFieldValidators: StringMap<(value: unknown) => boolean>,
 ): options is T {
   if (!isObject(options)) return false
 

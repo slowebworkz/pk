@@ -1,4 +1,11 @@
-import type { AnyRecord, ClassName, ElementType, EmptyRecord, TagMap } from '../primitives'
+import type {
+  AnyRecord,
+  ClassName,
+  ElementType,
+  EmptyRecord,
+  StringMap,
+  TagMap,
+} from '../primitives'
 import type { AriaRule } from '../aria-rule'
 import type { Diagnostics } from '@praxis-kit/diagnostics'
 import type { NormalizeFn } from './factory-options'
@@ -32,5 +39,5 @@ export type ResolvedFactoryOptions<
   readonly allowText?: boolean
   readonly ariaRules?: readonly AriaRule[]
   readonly allowedAs?: readonly ElementType[]
-  readonly precomputedClasses?: Readonly<Record<string, string>>
+  readonly precomputedClasses?: Readonly<StringMap<string>>
 }

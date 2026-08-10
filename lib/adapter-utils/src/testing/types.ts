@@ -5,6 +5,7 @@ import type {
   Rule,
   VariantMap,
 } from '@praxis-kit/core'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { Diagnostics } from '@praxis-kit/diagnostics'
 
 /**
@@ -41,9 +42,9 @@ export type ConformanceFactoryOptions = {
   name?: string
   styling?: {
     base?: string
-    variants?: Record<string, Record<string, string>>
-    defaults?: Record<string, string>
-    compounds?: ReadonlyArray<Record<string, string> & { class: string }>
+    variants?: StringMap<StringMap<string>>
+    defaults?: StringMap<string>
+    compounds?: ReadonlyArray<StringMap<string> & { class: string }>
     presets?: AnyRecord
   }
   filterProps?: (key: string, variantKeys: ReadonlySet<string>) => boolean

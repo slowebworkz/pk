@@ -6,6 +6,7 @@ import type {
   VariantMap,
   VariantSelection,
 } from '@praxis-kit/core'
+import type { StringMap } from '@praxis-kit/primitive'
 
 export type Runtime<G extends PolymorphicGenerics> = PolymorphicRuntime<
   G['default'],
@@ -20,5 +21,5 @@ export type LooseRuntime = PolymorphicRuntime<
   AnyRecord,
   VariantMap,
   string,
-  Record<string, VariantSelection<VariantMap>>
+  StringMap<VariantSelection<VariantMap>>
 >

@@ -1,4 +1,6 @@
-type Attributes = Readonly<Record<string, string>>
+import type { StringMap } from '../types/primitives'
+
+type Attributes = Readonly<StringMap<string>>
 
 const EMPTY_ATTRS: Attributes = Object.freeze({})
 

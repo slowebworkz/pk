@@ -1,11 +1,12 @@
 // types/class-extract.ts
+import type { StringMap } from '@praxis-kit/primitive'
 
-export type VariantValues = Record<string, string | string[]>
-export type VariantMap = Record<string, VariantValues>
-export type DefaultMap = Record<string, string>
+export type VariantValues = StringMap<string | string[]>
+export type VariantMap = StringMap<VariantValues>
+export type DefaultMap = StringMap<string>
 
 export type CompoundEntry = {
-  conditions: Record<string, string | string[]>
+  conditions: StringMap<string | string[]>
   cls: string | string[]
 }
 

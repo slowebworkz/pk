@@ -13,7 +13,7 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { AnyRecord } from '@praxis-kit/primitive'
+import type { AnyRecord, StringMap } from '@praxis-kit/primitive'
 
 const pkg = dirname(fileURLToPath(import.meta.url))
 const distDir = join(pkg, '../dist')
@@ -24,11 +24,11 @@ type Expected = {
   mustExclude: string[]
 }
 
-type OutputInputs = Record<string, { bytesInOutput: number }>
+type OutputInputs = StringMap<{ bytesInOutput: number }>
 
 type Metafile = {
   inputs: AnyRecord
-  outputs: Record<string, { inputs: OutputInputs }>
+  outputs: StringMap<{ inputs: OutputInputs }>
 }
 
 function getLiveInputPaths(metafile: Metafile): string[] {

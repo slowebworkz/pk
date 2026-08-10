@@ -6,12 +6,13 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { isFunction } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import { isFactoryOptionsLike } from '@praxis-kit/adapter-utils'
 import type { UnknownProps } from './types/primitives'
 import type { VueFactoryOptions } from './vue-options'
 
 /** Vue-specific addition on top of `FactoryOptions`. */
-const VUE_FIELD_VALIDATORS: Record<string, (value: unknown) => boolean> = {
+const VUE_FIELD_VALIDATORS: StringMap<(value: unknown) => boolean> = {
   filterProps: (v) => v === undefined || isFunction(v),
 }
 

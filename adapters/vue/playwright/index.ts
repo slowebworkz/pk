@@ -1,9 +1,10 @@
 import { beforeMount, afterMount } from '@playwright/experimental-ct-vue/hooks'
+import type { StringMap } from '@praxis-kit/primitive'
 
-beforeMount<Record<string, unknown>>(async () => {
+beforeMount<StringMap>(async () => {
   // Global setup for all CT tests — add context providers here if needed.
 })
 
-afterMount<Record<string, unknown>>(async () => {
+afterMount<StringMap>(async () => {
   // Global teardown after each mounted component.
 })
