@@ -1,17 +1,16 @@
 import type { StyleContext } from './types'
 import { iterate } from '@praxis-kit/primitive'
-import type { AnyRecord } from '@praxis-kit/primitive'
+import type { AnyRecord, StringMap } from '@praxis-kit/primitive'
 
 /** Flat compound variant: all keys except `class` are condition key:value pairs. */
-export type CompoundVariant = { readonly class: string | readonly string[] } & Record<
-  string,
+export type CompoundVariant = { readonly class: string | readonly string[] } & StringMap<
   string | readonly string[]
 >
 
 export interface VariantConfig {
-  variants: Record<string, Record<string, string>>
-  presets?: Record<string, Record<string, string>>
-  defaults?: Record<string, string>
+  variants: StringMap<StringMap<string>>
+  presets?: StringMap<StringMap<string>>
+  defaults?: StringMap<string>
   compounds?: ReadonlyArray<CompoundVariant>
 }
 

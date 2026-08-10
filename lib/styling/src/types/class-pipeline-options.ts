@@ -4,6 +4,7 @@ import type {
   CVASystemOptions,
   RecipeOptions,
   RecipeTarget,
+  StringMap,
   StyleOptions,
   TagMapOptions,
 } from '@praxis-kit/primitive'
@@ -19,7 +20,7 @@ export type {
 
 interface PrecomputedClassesOptions {
   /** Static variant-class map injected by `classExtractPlugin`. Keys use the same format as `VariantClassResolver` cache keys (variant-only props, sorted). */
-  precomputedClasses?: Readonly<Record<string, string>>
+  precomputedClasses?: Readonly<StringMap<string>>
 }
 
 export type CompositionOptions<TVariants extends VariantMap = VariantMap> = TagMapOptions &

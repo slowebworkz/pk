@@ -1,4 +1,4 @@
-import type { AnyRecord } from '@praxis-kit/primitive'
+import type { AnyRecord, StringMap } from '@praxis-kit/primitive'
 
 export type UnknownProps = AnyRecord
 export type ResolvedProps = Readonly<UnknownProps>
@@ -12,6 +12,6 @@ export type ResolvedAttributes = AnyRecord
 // Not @praxis-kit/runtime's StyleMap — that belongs to the legacy decoration model
 // other adapters are moving away from; this is a local, Svelte-only equivalent.
 export type StyleValue = string | number
-export type StyleObject = Partial<Record<string, StyleValue | null | undefined>>
+export type StyleObject = Partial<StringMap<StyleValue | null | undefined>>
 
 export type { FilterPredicate } from '@praxis-kit/adapter-utils'

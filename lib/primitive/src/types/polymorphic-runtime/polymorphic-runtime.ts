@@ -1,4 +1,4 @@
-import type { AnyRecord, ElementType } from '../primitives'
+import type { AnyRecord, ElementType, StringMap } from '../primitives'
 import type { ClassPlugin } from '../class'
 import type { ResolvedFactoryOptions } from '../factory'
 import type { RecipeMap, VariantMap, VariantSelection } from '../variants'
@@ -13,7 +13,7 @@ export type PolymorphicRuntime<
   Props extends AnyRecord,
   Variants extends VariantMap,
   TSlot extends string = never,
-  TPreset extends RecipeMap<Variants> = Readonly<Record<string, VariantSelection<Variants>>>,
+  TPreset extends RecipeMap<Variants> = Readonly<StringMap<VariantSelection<Variants>>>,
   TPlugin extends ClassPlugin | undefined = ClassPlugin | undefined,
 > = RuntimePluginField<TPlugin> & {
   readonly options: Readonly<ResolvedFactoryOptions<TDefault, Props, Variants, TPreset>>

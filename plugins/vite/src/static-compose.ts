@@ -38,13 +38,14 @@ import ts from 'typescript'
 import { asObject, firstObjectArg, getProperty, isFactoryCall, walkEach } from './ast'
 import { buildCacheKey } from './class-extract'
 import { iterate } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type StaticComponent = {
   readonly defaultTag: string
   readonly variantKeys: ReadonlySet<string>
-  readonly precomputedClasses: Readonly<Record<string, string>>
+  readonly precomputedClasses: Readonly<StringMap<string>>
 }
 
 // ─── Phase 1: collect factory call metadata ───────────────────────────────────
@@ -98,7 +99,7 @@ export function extractStaticComponents(
     if (!precomputedNode) return
 
     // Extract precomputedClasses as a plain Record.
-    const precomputedClasses: Record<string, string> = {}
+    const precomputedClasses: StringMap<string> = {}
 
     const isNotPrecomputed = iterate.find<ts.ObjectLiteralElementLike, true>(
       precomputedNode.properties,
@@ -206,7 +207,7 @@ function createStaticCompositionTransformer(
       const outputTag = asVal.kind === 'string' ? asVal.value : info.defaultTag
 
       // Collect variant prop values; bail on any dynamic variant prop.
-      const variantProps: Record<string, string> = {}
+      const variantProps: StringMap<string> = {}
       for (const propName of info.variantKeys) {
         const val = readAttrValue(attrList, propName)
         if (val.kind === 'absent') continue

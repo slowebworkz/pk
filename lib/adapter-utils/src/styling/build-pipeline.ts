@@ -4,6 +4,7 @@ import type { CompoundRecord, Defaults, PresetRecord, VariantRecord } from './bu
 import { buildVariantConfig } from './build-variant-config'
 import type { ClassResolution } from './resolve-classes'
 import { resolveClasses } from './resolve-classes'
+import type { StringMap } from '@praxis-kit/primitive'
 
 export interface StylePipeline {
   execute(decoration: Record<NodeId, NodeDecoration>, recipe?: string): ClassResolution
@@ -14,7 +15,7 @@ export function buildStylePipeline(
   presets: PresetRecord | undefined,
   defaults: Defaults,
   compounds: ReadonlyArray<CompoundRecord> | undefined,
-  variantLookup: Record<string, string> | undefined,
+  variantLookup: StringMap<string> | undefined,
 ): StylePipeline | undefined {
   if (
     variants === undefined &&

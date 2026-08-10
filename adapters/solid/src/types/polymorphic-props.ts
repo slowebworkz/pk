@@ -11,6 +11,7 @@ import type {
   VariantProps,
   VariantsOf,
 } from '@praxis-kit/core'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { SlotRenderFn, UnknownProps } from './primitives'
 
 export type ElementRef<T extends ElementType> = T extends IntrinsicTag
@@ -83,7 +84,7 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
  */
 export type CompoundComponent<
   G extends PolymorphicGenerics,
-  S extends Readonly<Record<string, PolymorphicGenerics>>,
+  S extends Readonly<StringMap<PolymorphicGenerics>>,
 > = PolymorphicComponent<G> & {
   readonly [K in keyof S]: PolymorphicComponent<S[K]>
 }

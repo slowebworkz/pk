@@ -1,4 +1,5 @@
 import type { CapabilityMap, Diagnostic, SlotName, VariantMap } from '@praxis-kit/pipeline'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { ComponentDefinition } from '../../types'
 
 export interface SourceLocation {
@@ -32,7 +33,7 @@ export interface ArtifactHashes {
  */
 export interface ArtifactPrecomputed {
   /** Variant + compound class string keyed by `buildPrecomputedKey(activeProps)`. */
-  readonly variantLookup: Record<string, string>
+  readonly variantLookup: StringMap<string>
 }
 
 export interface CompiledComponentArtifact {

@@ -18,6 +18,7 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { iterate } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { AnyRecord } from '@praxis-kit/core'
 import { LitElement, html } from 'lit'
 import { buildRuntime } from './build-runtime'
@@ -78,7 +79,7 @@ export function createContractComponent<
     ...pluginKeys,
   ])
 
-  const staticProps: Record<string, { type: typeof String; attribute: string | boolean }> = {
+  const staticProps: StringMap<{ type: typeof String; attribute: string | boolean }> = {
     as: { type: String, attribute: 'as' },
     recipe: { type: String, attribute: 'variant-key' },
     // External className input — separate from the pipeline-output `class`

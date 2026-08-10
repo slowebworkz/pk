@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url'
 import { Node, Project, SyntaxKind } from 'ts-morph'
 import type { DepGraph, ExportsFile, GzipSnapshot, PackageMetrics, Snapshot } from './types.ts'
 import { iterate } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 
 const pkg = dirname(fileURLToPath(import.meta.url))
 const root = join(pkg, '../../..')
@@ -28,7 +29,7 @@ const gzipRaw = await readJson<GzipSnapshot>(
   join(root, 'qa/tree-shaking-tests/snapshots/gzip.json'),
 )
 
-const bundles: Record<string, number> = {}
+const bundles: StringMap<number> = {}
 iterate.forEach(
   Object.keys(gzipRaw).sort((a, b) => gzipRaw[b]!.gzip - gzipRaw[a]!.gzip),
   (scenario) => {
@@ -41,8 +42,8 @@ iterate.forEach(
 const depGraph = await readJson<DepGraph>(join(root, '.repo-state/dependency-graph.json'))
 const exportsFile = await readJson<ExportsFile>(join(root, '.repo-state/exports.json'))
 
-function collectExports(file: ExportsFile): Record<string, { values: number; types: number }> {
-  const out: Record<string, { values: number; types: number }> = {}
+function collectExports(file: ExportsFile): StringMap<{ values: number; types: number }> {
+  const out: StringMap<{ values: number; types: number }> = {}
   const keys = Object.keys(file)
     .filter((k) => k !== 'generated' && k.startsWith('@'))
     .sort()
@@ -85,7 +86,7 @@ const prefixes = SOURCE_PACKAGES.map(({ key, src }) => ({
   key,
 }))
 
-const complexity: Record<string, PackageMetrics> = {}
+const complexity: StringMap<PackageMetrics> = {}
 iterate.forEach(SOURCE_PACKAGES, ({ key }) => {
   complexity[key] = { files: 0, functions: 0, loc: 0 }
 })

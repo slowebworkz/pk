@@ -1,6 +1,6 @@
 import type { DiagnosticInput } from '@praxis-kit/diagnostics'
 import { DiagnosticCategory, DiagnosticCode } from '@praxis-kit/diagnostics'
-import type { Severity as AriaSeverity } from '@praxis-kit/primitive'
+import type { Severity as AriaSeverity, StringMap } from '@praxis-kit/primitive'
 
 // A fixed-severity fact about HTML/ARIA-in-HTML validity. The same diagnostic always carries the
 // same severity, so it's declared once here rather than re-decided at every call site — callers
@@ -13,7 +13,7 @@ type Fact = DiagnosticInput & { readonly severity: AriaSeverity }
 // One `DiagnosticCode` per attribute (HTML3102–3111, see `codes.ts`) rather than one shared code —
 // each is independently documentable/lookupable, the same way a compiler assigns a distinct code
 // per diagnosable fact rather than one generic "type error" code.
-const ATTRIBUTE_IGNORED_CODES: Readonly<Record<string, DiagnosticCode>> = {
+const ATTRIBUTE_IGNORED_CODES: Readonly<StringMap<DiagnosticCode>> = {
   checked: DiagnosticCode.HtmlInputCheckedIgnoredForType,
   multiple: DiagnosticCode.HtmlInputMultipleIgnoredForType,
   maxLength: DiagnosticCode.HtmlInputMaxLengthIgnoredForType,

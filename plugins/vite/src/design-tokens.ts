@@ -34,6 +34,7 @@
  *   }
  */
 import { iterate } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import { layoutKeys } from '@praxis-kit/tailwind'
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -53,7 +54,7 @@ export type ComponentTokens = {
 }
 
 export type DesignTokenManifest = {
-  components: Record<string, ComponentTokens>
+  components: StringMap<ComponentTokens>
   allClasses: string[]
 }
 
@@ -188,7 +189,7 @@ function mergeTokens(
  * on its own — without this, Tailwind silently drops their generated CSS.
  */
 export function buildManifest(allTokens: Map<string, ComponentTokens>): DesignTokenManifest {
-  const components: Record<string, ComponentTokens> = {}
+  const components: StringMap<ComponentTokens> = {}
   const seen = new Set<string>(layoutKeys)
 
   iterate.forEach(allTokens, ([name, tokens]) => {

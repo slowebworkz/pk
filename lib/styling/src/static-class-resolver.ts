@@ -1,14 +1,12 @@
 import { LRUCache } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 
 export class StaticClassResolver {
   readonly #baseClass: string
   readonly #cache = new LRUCache<string, string>(200)
   readonly #resolveTag: (tag: string) => string
 
-  constructor(
-    baseClass: string | string[],
-    tagMap?: Record<string, string | string[] | undefined>,
-  ) {
+  constructor(baseClass: string | string[], tagMap?: StringMap<string | string[] | undefined>) {
     this.#baseClass = Array.isArray(baseClass) ? baseClass.join(' ') : baseClass
 
     this.#resolveTag = tagMap

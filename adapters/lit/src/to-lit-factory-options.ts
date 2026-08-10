@@ -7,11 +7,12 @@ import type {
   VariantMap,
 } from '@praxis-kit/core'
 import { isFunction } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import { isFactoryOptionsLike } from '@praxis-kit/adapter-utils'
 import type { LitFactoryOptions } from './types'
 
 /** Lit-specific addition on top of `FactoryOptions`. */
-const LIT_FIELD_VALIDATORS: Record<string, (value: unknown) => boolean> = {
+const LIT_FIELD_VALIDATORS: StringMap<(value: unknown) => boolean> = {
   filterProps: (v) => v === undefined || isFunction(v),
 }
 
