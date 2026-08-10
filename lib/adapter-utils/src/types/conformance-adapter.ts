@@ -36,7 +36,8 @@ export type ConformanceAdapter<C extends ConformanceComponent = ConformanceCompo
   createRef?(): ConformanceRef
   /**
    * Declare which optional *behavioral* contracts this adapter satisfies.
-   * Unset fields default to true — only set false to opt out.
+   * Unset fields default to true unless otherwise documented; set a field to false to opt out.
+   * (`dynamicChildRules` is the one exception — see its own doc comment.)
    *
    * Kept separate from `testSuites` below: these four are properties of how the adapter
    * actually renders (does asChild work, does the tag change polymorphically, ...) — the
@@ -65,7 +66,11 @@ export type ConformanceAdapter<C extends ConformanceComponent = ConformanceCompo
      * tag/props) into `childrenEvaluator.evaluate()`, so a `dynamic(...)`
      * child-rule cardinality (e.g. varying by the resolved `as` tag) is
      * actually resolved rather than throwing for lack of context.
-     * Unset (default false) — opt in per adapter as each is wired.
+     *
+     * Unlike the other three capabilities above, this one is opt-in: unset defaults to
+     * *false*, not true — the safe default when it's unknown whether an adapter's render path
+     * threads the context through, since claiming support silently would let a real gap pass
+     * uncaught rather than surface as a skipped test.
      */
     dynamicChildRules?: boolean
   }
