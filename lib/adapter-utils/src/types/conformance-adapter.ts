@@ -39,11 +39,10 @@ export type ConformanceAdapter<C extends ConformanceComponent = ConformanceCompo
    * Unset fields default to true unless otherwise documented; set a field to false to opt out.
    * (`dynamicChildRules` is the one exception — see its own doc comment.)
    *
-   * Kept separate from `testSuites` below: these four are properties of how the adapter
-   * actually renders (does asChild work, does the tag change polymorphically, ...) — the
-   * conformance suite itself asserts them. `testSuites` is a different kind of fact (whether a
-   * *separate* test file exists that exercises this adapter at all), not something this suite
-   * verifies by running these same assertions.
+   * Kept separate from `testSuites` below: these properties describe how the adapter actually
+   * renders (does asChild work, does the tag change polymorphically, ...) — the conformance
+   * suite asserts these behaviors. `testSuites` is a different kind of fact: whether a
+   * *separate* test file exists that exercises this adapter at all.
    */
   capabilities?: {
     /** false for Solid, which uses a render-function asChild pattern. */
@@ -75,16 +74,15 @@ export type ConformanceAdapter<C extends ConformanceComponent = ConformanceCompo
     dynamicChildRules?: boolean
   }
   /**
-   * Informational only — declares whether a *separate* test file wires this adapter into
-   * `ssrConformanceSuite`/`hydrationParitySuite`. Neither flag is read by this suite or any
-   * other code; nothing here fails if it's unset or wrong. Distinct from `capabilities` because
-   * these aren't behavioral facts this suite verifies by running assertions — they just document,
-   * next to the adapter contract itself, whether that separate coverage exists.
+   * Informational only — documents whether separate SSR and hydration conformance coverage has
+   * been wired for this adapter. These flags do not affect the behavioral conformance
+   * assertions in `capabilities` above.
    */
   testSuites?: {
-    /** true if this adapter supports server-side rendering via ssrConformanceSuite. */
+    /** Whether SSR conformance coverage is wired for this adapter, via `ssrConformanceSuite`. */
     ssr?: boolean
-    /** true if this adapter supports hydration parity via hydrationParitySuite. */
+    /** Whether hydration parity coverage is wired for this adapter, via
+     *  `hydrationParitySuite`. */
     hydration?: boolean
   }
 }
