@@ -1,5 +1,5 @@
 import type { TSESTree } from '@typescript-eslint/utils'
-import { iterate } from '@praxis-kit/primitive'
+import { iterate, isObject, isString } from '@praxis-kit/primitive'
 
 type NullableNode = TSESTree.Node | null | undefined
 
@@ -11,6 +11,12 @@ type CallExpression = TSESTree.CallExpression
 // ---------------------------------------------------------------------------
 // Type guards / casts
 // ---------------------------------------------------------------------------
+
+/** Narrows any node-shaped value to one whose `value` property is a string — the common check
+ *  behind both `asStringLiteral` and `getPropertyKey`'s `Literal` branch. */
+function hasStringValue(node: unknown): node is { value: string } {
+  return isObject(node, true) && isString(node.value)
+}
 
 export function asObjectExpression(node: NullableNode): ObjectExpression | undefined {
   return node?.type === 'ObjectExpression' ? node : undefined
@@ -48,7 +54,7 @@ export function asNumericLiteral(node: NullableNode): number | undefined {
 }
 
 export function asStringLiteral(node: NullableNode): string | undefined {
-  if (node?.type === 'Literal' && typeof node.value === 'string') return node.value
+  if (node?.type === 'Literal' && hasStringValue(node)) return node.value
   return undefined
 }
 
@@ -60,22 +66,14 @@ export function getPropertyKey(prop: Property): string | undefined {
   const { key } = prop
   if (prop.computed) return undefined
   if (key.type === 'Identifier') return key.name
-  if (key.type === 'Literal' && typeof key.value === 'string') return key.value
+  if (key.type === 'Literal' && hasStringValue(key)) return key.value
   return undefined
 }
 
 export function getObjectProperty(obj: ObjectExpression, key: string): Property | undefined {
   return obj.properties.find((prop): prop is Property => {
-    if (prop.type !== 'Property' || prop.kind !== 'init' || prop.computed) {
-      return false
-    }
-
-    const { key: propKey } = prop
-
-    return (
-      (propKey.type === 'Identifier' && propKey.name === key) ||
-      (propKey.type === 'Literal' && propKey.value === key)
-    )
+    if (prop.type !== 'Property' || prop.kind !== 'init') return false
+    return getPropertyKey(prop) === key
   })
 }
 
@@ -118,8 +116,13 @@ function extractVariantValues(node: NullableNode): Set<string> | undefined {
   return values
 }
 
-// Builds { variant → Set<allowedValue> } from a styling.variants ObjectExpression.
-// Returns undefined when the node isn't a static object literal and can't be analyzed.
+// Builds { variant → Set<allowedValue> } from a styling.variants ObjectExpression. Returns
+// undefined only when variantsNode itself isn't a static object literal — individual variant
+// entries are extracted independently, so a dynamically-built entry (e.g. `intent:
+// getIntentVariants()`) is silently skipped rather than failing the whole extraction. Callers
+// that need "fully statically analyzable or nothing" should check the entry count against
+// variantsNode's own property count themselves; this function's contract is "return everything
+// that can be statically determined."
 export function extractVariantMap(
   variantsNode: NullableNode,
 ): Map<string, Set<string>> | undefined {

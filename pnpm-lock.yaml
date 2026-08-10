@@ -1008,6 +1008,9 @@ importers:
       '@typescript-eslint/utils':
         specifier: 'catalog:'
         version: 8.66.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3)
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.8.0
     devDependencies:
       '@praxis-kit/pipeline':
         specifier: workspace:*

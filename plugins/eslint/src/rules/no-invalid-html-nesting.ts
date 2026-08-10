@@ -1,18 +1,38 @@
 import { RuleCreator } from '@typescript-eslint/utils/eslint-utils'
 import type { TSESTree } from '@typescript-eslint/utils'
-import { HTML_CONTENT_MODELS, TAG_CATEGORIES } from '../utils/html-nesting'
+import {
+  HTML_CONTENT_MODELS,
+  TAG_CATEGORIES,
+  getContentModelDefinition,
+  getTagCategorySet,
+} from '../utils/html-nesting'
 import { iterate } from '@praxis-kit/primitive'
+import type { StringMap } from '@praxis-kit/primitive'
 import { EslintDiagnosticTemplates } from '../diagnostics'
+import type { ContentModelDefinition } from '../types'
 
 const createRule = RuleCreator((name) => `https://praxis-kit.dev/eslint-rules/${name}`)
 
-const ALLOWED_TEXT: Record<string, string> = Object.fromEntries(
-  Object.entries(HTML_CONTENT_MODELS).map(([tag, model]) => [
-    tag,
-    model.kind === 'specific'
-      ? [...model.allowed].join(', ')
-      : [...model.allowed].map((c) => `${c} content`).join(', '),
-  ]),
+function describeAllowed(definition: ContentModelDefinition): string {
+  const { model } = definition
+  switch (model.kind) {
+    case 'specific':
+      return [...model.allowed].join(', ')
+    case 'category':
+      return [...model.allowed].map((c) => `${c} content`).join(', ')
+    // `transparent`/`nothing`/`structured` aren't evaluated yet (see `isAllowed` below) — no
+    // entry in HTML_CONTENT_MODELS currently uses them, so this stays unreachable in practice.
+    case 'transparent':
+    case 'nothing':
+    case 'structured':
+      return ''
+  }
+}
+
+const ALLOWED_TEXT: StringMap<string> = Object.fromEntries(
+  Object.entries(HTML_CONTENT_MODELS)
+    .filter((entry): entry is [string, ContentModelDefinition] => entry[1] !== undefined)
+    .map(([tag, definition]) => [tag, describeAllowed(definition)]),
 )
 
 export type Options = []
@@ -24,11 +44,34 @@ function getIntrinsicTag(name: TSESTree.JSXTagNameExpression): string | undefine
   return /^[a-z]/.test(name.name) ? name.name : undefined
 }
 
-function isAllowed(childTag: string, model: (typeof HTML_CONTENT_MODELS)[string]): boolean {
-  if (model.kind === 'specific') return model.allowed.has(childTag)
-  const cats = TAG_CATEGORIES[childTag]
-  if (!cats) return true // unknown child tag — don't flag
-  return [...model.allowed].some((c) => cats.has(c))
+/**
+ * Evaluates a `ContentModelDefinition` against a candidate child tag.
+ *
+ * Only `specific` (explicit tag allowlist) and `category` (content-category membership) are
+ * evaluated today — the same two kinds every entry in `HTML_CONTENT_MODELS` currently uses.
+ * `transparent`/`nothing`/`structured` are real HTML content-model concepts (see their own doc
+ * comments in `types/content-model.ts`) that this validator doesn't check yet: `transparent`
+ * needs the parent's own rendering context, `nothing` needs a void-element check this rule
+ * doesn't perform, and `structured` needs an order-aware grammar evaluator, not a flat
+ * membership test. Each passes through (no violation reported) rather than being treated as
+ * disallowing everything, so introducing one of these kinds to a future table entry doesn't
+ * silently start flagging valid markup the validator can't actually reason about yet.
+ */
+function isAllowed(childTag: string, definition: ContentModelDefinition): boolean {
+  const { model } = definition
+  switch (model.kind) {
+    case 'specific':
+      return model.allowed.has(childTag)
+    case 'category': {
+      const cats = getTagCategorySet(TAG_CATEGORIES, childTag)
+      if (!cats) return true // unknown child tag — don't flag
+      return [...model.allowed].some((c) => cats.has(c))
+    }
+    case 'transparent':
+    case 'nothing':
+    case 'structured':
+      return true
+  }
 }
 
 export const noInvalidHtmlNesting = createRule<Options, MessageIds>({
@@ -51,8 +94,8 @@ export const noInvalidHtmlNesting = createRule<Options, MessageIds>({
         const parentTag = getIntrinsicTag(node.openingElement.name)
         if (!parentTag) return
 
-        const model = HTML_CONTENT_MODELS[parentTag]
-        if (!model) return
+        const definition = getContentModelDefinition(HTML_CONTENT_MODELS, parentTag)
+        if (!definition) return
 
         iterate.forEach(node.children, (child) => {
           // JSXText, JSXExpressionContainer, JSXSpreadChild, JSXFragment — skip.
@@ -61,7 +104,7 @@ export const noInvalidHtmlNesting = createRule<Options, MessageIds>({
 
           const childTag = getIntrinsicTag(child.openingElement.name)
           if (childTag === undefined) return
-          if (isAllowed(childTag, model)) return
+          if (isAllowed(childTag, definition)) return
 
           context.report({
             node: child,
