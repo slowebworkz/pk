@@ -2,6 +2,31 @@ import type { AnyRecord, ChildRuleContext, ChildRuleMatch, Rule } from '@praxis-
 import type { StringMap } from '@praxis-kit/primitive'
 import type { Diagnostics } from '@praxis-kit/diagnostics'
 
+type ConformanceStyling = {
+  base?: string
+  variants?: StringMap<StringMap<string>>
+  defaults?: StringMap<string>
+  compounds?: ReadonlyArray<StringMap<string> & { class: string }>
+  presets?: AnyRecord
+}
+
+type ConformanceChildRule = {
+  name: string
+  /**
+   * `ChildRuleMatch<unknown>` — the same type predicate shape the core enforcement API itself
+   * requires (see `@praxis-kit/primitive`'s `ChildRuleMatch<T, U>`), not loosened to a plain
+   * boolean-returning function. A real `match` passed through this conformance config still
+   * needs to satisfy the actual core contract.
+   */
+  match: ChildRuleMatch<unknown>
+  cardinality?: Rule<{ min?: number; max?: number }, ChildRuleContext>
+}
+
+type ConformanceEnforcement = {
+  diagnostics?: Diagnostics
+  children?: ReadonlyArray<ConformanceChildRule>
+}
+
 /**
  * Framework-neutral factory options used by the conformance suite.
  *
@@ -12,28 +37,9 @@ import type { Diagnostics } from '@praxis-kit/diagnostics'
 export type ConformanceFactoryOptions = {
   tag?: string
   name?: string
-  styling?: {
-    base?: string
-    variants?: StringMap<StringMap<string>>
-    defaults?: StringMap<string>
-    compounds?: ReadonlyArray<StringMap<string> & { class: string }>
-    presets?: AnyRecord
-  }
+  styling?: ConformanceStyling
   /** Determines whether a prop should be forwarded to the rendered element. */
   filterProps?: (key: string, variantKeys: ReadonlySet<string>) => boolean
   /** Child enforcement rules applied by the generated component. */
-  enforcement?: {
-    diagnostics?: Diagnostics
-    children?: ReadonlyArray<{
-      name: string
-      /**
-       * `ChildRuleMatch<unknown>` — the same type predicate shape the core enforcement API
-       * itself requires (see `@praxis-kit/primitive`'s `ChildRuleMatch<T, U>`), not loosened to
-       * a plain boolean-returning function. A real `match` passed through this conformance
-       * config still needs to satisfy the actual core contract.
-       */
-      match: ChildRuleMatch<unknown>
-      cardinality?: Rule<{ min?: number; max?: number }, ChildRuleContext>
-    }>
-  }
+  enforcement?: ConformanceEnforcement
 }
