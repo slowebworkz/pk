@@ -8,6 +8,7 @@ export type {
   PolymorphicWithAsChild,
   PolymorphicWithRender,
   PolymorphicComponent,
+  ContractProps,
   ElementRef,
   RenderCallbackProps,
 } from '../shared'

@@ -12,6 +12,7 @@ import type {
   VariantProps,
   VariantsOf,
 } from '@praxis-kit/core'
+import type { StringMap } from '@praxis-kit/primitive'
 import type { RenderCallbackProps } from './props'
 import type { UnknownProps } from './primitives'
 
@@ -203,8 +204,58 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
    */
   (props: PolymorphicProps<G, DefaultOf<G>>): ReactElement
 
+  /**
+   * Type-only; never assigned at runtime. Lets `ContractProps` recover `G` from a built
+   * component's value type (`typeof Component`) without needing the original options object in
+   * scope. The fallback overload above pins `React.ComponentProps<typeof Component>` to
+   * normal-mode props only — this marker is what lets `ContractProps<typeof Component, 'asChild'>`
+   * or `'render'` reach the other two render-mode shapes, which `ComponentProps` structurally
+   * cannot resolve for an overloaded function.
+   */
+  readonly __generics?: G
+
   displayName?: string
 }
+
+/**
+ * Recovers a built `PolymorphicComponent<G>`'s prop shape for a specific render mode, from
+ * outside the file that built it — the missing piece `React.ComponentProps<typeof Component>`
+ * can't provide, since it always resolves against `PolymorphicComponent`'s normal-mode fallback
+ * overload (see that type's own doc comment).
+ *
+ * ```tsx
+ * const Container = createContractComponent({ tag: 'div', name: 'Container', /* ... *\/ })
+ *
+ * // Normal-mode props (equivalent to ComponentProps<typeof Container>, but works for every mode):
+ * type ContainerProps = ContractProps<typeof Container>
+ *
+ * // A wrapper that always renders Container with asChild — ComponentProps<typeof Container>
+ * // fails here ("Type 'true' is not assignable to type 'false'"); ContractProps doesn't.
+ * type ContainerAsChildProps = ContractProps<typeof Container, 'asChild'>
+ * ```
+ *
+ * `T` accepts any built component value (`PolymorphicComponent<G>` or `CompoundComponent<G, S>` —
+ * the latter's sub-component intersection doesn't disturb `__generics`, which lives on the root
+ * call signature) via its own `__generics` marker; the `never` branch below only fires for a
+ * non-praxis-kit component, which has no `__generics` field to infer from at all.
+ *
+ * Always resolves against the component's *default* element (`PolymorphicWithAsChild<G,
+ * DefaultOf<G>>`, etc.) — the same ceiling `React.ComponentProps<typeof Component>` already has
+ * for its one mode, not a new limitation `ContractProps` introduces. `ContractProps<typeof
+ * Button>` is "`Button`'s contract for its default element," not a substitute for
+ * `PolymorphicProps<G, 'a'>` when a caller needs a specific non-default `as` — those remain two
+ * different questions with two different answers.
+ */
+export type ContractProps<
+  T extends { readonly __generics?: PolymorphicGenerics },
+  Mode extends 'normal' | 'asChild' | 'render' = 'normal',
+> = T extends { readonly __generics?: infer G extends PolymorphicGenerics }
+  ? Mode extends 'asChild'
+    ? PolymorphicWithAsChild<G, DefaultOf<G>>
+    : Mode extends 'render'
+      ? PolymorphicWithRender<G, DefaultOf<G>>
+      : PolymorphicProps<G, DefaultOf<G>>
+  : never
 
 /**
  * A `PolymorphicComponent<G>` with named sub-components attached, e.g.
@@ -218,7 +269,7 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
  */
 export type CompoundComponent<
   G extends PolymorphicGenerics,
-  S extends Readonly<Record<string, PolymorphicGenerics>>,
+  S extends Readonly<StringMap<PolymorphicGenerics>>,
 > = PolymorphicComponent<G> & {
   readonly [K in keyof S]: PolymorphicComponent<S[K]>
 }
