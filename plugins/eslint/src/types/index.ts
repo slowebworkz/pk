@@ -18,3 +18,4 @@ export type {
   TransparentContentModel,
 } from './content-model'
 export type { DiagnosticTemplateMap } from './diagnostic-templates'
+export type { ImplicitRoleMap } from './implicit-roles'
