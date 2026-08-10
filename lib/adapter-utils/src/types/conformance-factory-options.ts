@@ -1,6 +1,6 @@
 import type { AnyRecord, ChildRuleContext, ChildRuleMatch, Rule } from '@praxis-kit/core'
-import type { StringMap } from '@praxis-kit/primitive'
 import type { Diagnostics } from '@praxis-kit/diagnostics'
+import type { StringMap } from '@praxis-kit/primitive'
 
 type ConformanceStyling = {
   base?: string
@@ -13,10 +13,9 @@ type ConformanceStyling = {
 type ConformanceChildRule = {
   name: string
   /**
-   * `ChildRuleMatch<unknown>` — the same type predicate shape the core enforcement API itself
-   * requires (see `@praxis-kit/primitive`'s `ChildRuleMatch<T, U>`), not loosened to a plain
-   * boolean-returning function. A real `match` passed through this conformance config still
-   * needs to satisfy the actual core contract.
+   * Uses the same type-predicate contract required by the core enforcement API — not loosened
+   * to a plain boolean-returning function. A real `match` passed through this conformance
+   * config still needs to satisfy the actual core contract.
    */
   match: ChildRuleMatch<unknown>
   cardinality?: Rule<{ min?: number; max?: number }, ChildRuleContext>
