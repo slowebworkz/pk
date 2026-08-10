@@ -2,3 +2,8 @@ src/**/*.d.ts
 src/**/*.d.ts.map
 src/**/*.js
 src/**/*.js.map
+
+# Hand-authored ambient declaration (packages/core has no runtime Node dependency; this exists
+# only so tsc recognizes the global `process.env.NODE_ENV` dev-only guards rely on) — not build
+# output, so it's an intentional exception to the blanket src/**/*.d.ts rule above.
+!src/global.d.ts
