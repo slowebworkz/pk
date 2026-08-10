@@ -1,5 +1,6 @@
 import type {
   AnyClassPluginFactory,
+  AnyRecord,
   ElementForTag,
   ElementType,
   EmptyRecord,
@@ -11,7 +12,7 @@ import type {
   RecipeMap,
   VariantMap,
 } from '@praxis-kit/core'
-import { COMPONENT_DEFAULT_TAG, isString } from '@praxis-kit/primitive'
+import { finalizeComponent } from '@praxis-kit/adapter-utils'
 import type { ReactElement, Ref } from 'react'
 import { forwardRef, useCallback, useRef } from 'react'
 import type { PolymorphicComponent, ReactFactoryOptions, UnknownProps } from '../shared'
@@ -37,8 +38,8 @@ import { buildRuntime } from './build-runtime'
  * ```
  *
  * Returns a `forwardRef` component — `ref` is forwarded to the rendered host element the same
- * way it works in `praxis-kit/react`. Pass `onElement` to run setup once the real DOM element
- * exists; this adapter doesn't support `subComponents`.
+ * way it works in `praxis-kit/react`. Pass `subComponents` to attach named sub-components
+ * (`Card.Header`) and `onElement` to run setup once the real DOM element exists.
  */
 export function createContractComponent<
   TDefault extends ElementType,
@@ -47,7 +48,23 @@ export function createContractComponent<
   TPreset extends RecipeMap<Variants> = NoPreset,
   TPlugin extends AnyClassPluginFactory = AnyClassPluginFactory,
   TAllowed extends ElementType = ElementType,
->(options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed>) {
+  TSubComponents extends Readonly<AnyRecord> = EmptyRecord,
+>(
+  options: ReactFactoryOptions<TDefault, Props, Variants, TPreset, TPlugin, TAllowed> & {
+    readonly subComponents?: TSubComponents
+  },
+): MergeRecords<
+  PolymorphicComponent<
+    PolymorphicGenerics<
+      TDefault,
+      MergeRecords<Props, ExtractPluginProps<TPlugin>>,
+      Variants,
+      TPreset,
+      TAllowed
+    >
+  >,
+  TSubComponents
+> {
   const bundle = buildRuntime(options)
   const { onElement } = options
 
@@ -93,18 +110,22 @@ export function createContractComponent<
   })
 
   applyDisplayName(Component, options.name)
-  const defaultTag = bundle.runtime.options.defaultTag
-  if (isString(defaultTag)) {
-    Object.assign(Component, { [COMPONENT_DEFAULT_TAG]: defaultTag })
-  }
+  const assembled = finalizeComponent(
+    Component,
+    bundle.runtime.options.defaultTag,
+    options.subComponents,
+  )
 
-  return Component as unknown as PolymorphicComponent<
-    PolymorphicGenerics<
-      TDefault,
-      MergeRecords<Props, ExtractPluginProps<TPlugin>>,
-      Variants,
-      TPreset,
-      TAllowed
-    >
+  return assembled as unknown as MergeRecords<
+    PolymorphicComponent<
+      PolymorphicGenerics<
+        TDefault,
+        MergeRecords<Props, ExtractPluginProps<TPlugin>>,
+        Variants,
+        TPreset,
+        TAllowed
+      >
+    >,
+    TSubComponents
   >
 }
