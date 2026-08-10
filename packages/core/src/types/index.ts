@@ -30,6 +30,7 @@ export type * from './contract'
 export type {
   AllowedOf,
   AnyFactoryOptions,
+  ClassPluginResolution,
   DefaultOf,
   EnforcementOptions,
   FactoryOptions,
