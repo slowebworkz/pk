@@ -39,7 +39,7 @@ catalog:
   "@vitejs/plugin-vue": ^6.0.8
   "@vitest/ui": ^4.1.9
   "@vue/compiler-dom": ^3.5.41
-  "@vue/server-renderer": ^3.5.40
+  "@vue/server-renderer": ^3.5.41
   "@vue/test-utils": ^2.4.0
   class-variance-authority: ^0.7.1
 
@@ -86,7 +86,7 @@ catalog:
   vite: ^8.2.1
   vite-plugin-solid: ^2.11.14
   vitest: ^4.1.10
-  vue: ^3.5.40
+  vue: ^3.5.41
 overrides:
   # Floors for Dependabot security advisories (esbuild GHSA dev-server file
   # read; undici SOCKS5/Set-Cookie/cache advisories; @babel/core source-map
