@@ -1,3 +1,4 @@
+import { resolveFactoryOptions, validateFactoryOptions, validateRenderProps } from '../options'
 import type {
   AnyClassPluginFactory,
   AnyRecord,
@@ -13,7 +14,6 @@ import type {
   ResolvedFactoryShape,
   VariantMap,
 } from '../types'
-import { resolveFactoryOptions, validateFactoryOptions, validateRenderProps } from '../options'
 import {
   memoizedAriaPipeline,
   memoizedHtmlChildrenEvaluatorPipeline,
@@ -72,7 +72,7 @@ export function createPolymorphic<
   }
 
   const { pluginResult, classPipeline } = resolveClassPlugin(
-    options.styling?.plugin as AnyClassPluginFactory,
+    options.styling?.plugin,
     anyResolved,
     resolved.diagnostics,
   )
