@@ -8,7 +8,7 @@ import type {
   RecipeOf,
   ResolvedFactoryOptions,
   VariantsOf,
-  createPolymorphic2,
+  createPolymorphic,
 } from '@praxis-kit/core'
 import type { ResolvedProps, UnknownProps } from './primitives'
 
@@ -63,5 +63,5 @@ export type Runtime = Readonly<
  * Used at the build layer; widened to `Runtime` for the render layer.
  */
 export type TypedRuntime<G extends PolymorphicGenerics> = ReturnType<
-  typeof createPolymorphic2<DefaultOf<G>, PropsOf<G>, VariantsOf<G>, RecipeOf<G>>
+  typeof createPolymorphic<DefaultOf<G>, PropsOf<G>, VariantsOf<G>, RecipeOf<G>>
 >

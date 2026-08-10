@@ -72,7 +72,7 @@ describe('resolveFactoryOptions() — provided options', () => {
 
   // Adapters resolve their own diagnostics default (throwDiagnostics for most, silentDiagnostics
   // for Lit/Web) via resolveAdapterCommonOptions and spread it onto the options object as a
-  // top-level `diagnostics` field before calling createPolymorphic2. Without this, that
+  // top-level `diagnostics` field before calling createPolymorphic. Without this, that
   // adapter-resolved default was silently discarded in favor of a hardcoded silentDiagnostics
   // fallback here, leaving allowedAs/aria enforcement silent by default everywhere.
   it('uses the adapter-resolved top-level diagnostics when enforcement.diagnostics is unset', () => {

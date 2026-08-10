@@ -1,17 +1,17 @@
 import { bench, describe } from 'vitest'
-import { createPolymorphic2 } from '@praxis-kit/core'
+import { createPolymorphic } from '@praxis-kit/core'
 import { cva } from 'class-variance-authority'
 import type { AnyRecord } from '@praxis-kit/core'
 
 // ─── Shared configs ────────────────────────────────────────────────────────────
 // Module-level runtimes exclude factory cost from resolver benchmarks.
 
-const noVariantRuntime = createPolymorphic2({
+const noVariantRuntime = createPolymorphic({
   tag: 'div',
   styling: { base: 'box' },
 })
 
-const variantRuntime = createPolymorphic2({
+const variantRuntime = createPolymorphic({
   tag: 'button',
   styling: {
     base: 'btn',
@@ -23,7 +23,7 @@ const variantRuntime = createPolymorphic2({
   },
 })
 
-const compoundRuntime = createPolymorphic2({
+const compoundRuntime = createPolymorphic({
   tag: 'button',
   styling: {
     base: 'btn',
@@ -117,7 +117,7 @@ const LARGE_COMPOUNDS = [
   },
 ] as const
 
-const largeVariantRuntime = createPolymorphic2({
+const largeVariantRuntime = createPolymorphic({
   tag: 'button',
   styling: {
     base: 'btn',
@@ -155,13 +155,13 @@ const LARGE_COMPOUND_HIT: AnyRecord = {
 
 describe('factory — no variants (cold path)', () => {
   bench('createPolymorphic', () => {
-    createPolymorphic2({ tag: 'div', styling: { base: 'box' } })
+    createPolymorphic({ tag: 'div', styling: { base: 'box' } })
   })
 })
 
 describe('factory — with variants (cold path)', () => {
   bench('createPolymorphic', () => {
-    createPolymorphic2({
+    createPolymorphic({
       tag: 'button',
       styling: {
         base: 'btn',
@@ -187,7 +187,7 @@ describe('factory — with variants (cold path)', () => {
 
 describe('factory — with variants + compounds (cold path)', () => {
   bench('createPolymorphic', () => {
-    createPolymorphic2({
+    createPolymorphic({
       tag: 'button',
       styling: {
         base: 'btn',
@@ -218,11 +218,11 @@ describe('factory — with variants + compounds (cold path)', () => {
 // warmup. Contrast with rotated configs to expose any deopt from shape mutation.
 describe('factory — repeated identical config (V8 shape stability)', () => {
   bench('createPolymorphic — same config every call', () => {
-    createPolymorphic2({ tag: 'button', styling: { base: 'btn' } })
+    createPolymorphic({ tag: 'button', styling: { base: 'btn' } })
   })
 
   bench('createPolymorphic — rotating configs (4 shapes, different keys each call)', () => {
-    createPolymorphic2(ROTATED_CONFIGS[rotateIdx++ % ROTATED_CONFIGS.length]!)
+    createPolymorphic(ROTATED_CONFIGS[rotateIdx++ % ROTATED_CONFIGS.length]!)
   })
 })
 
@@ -269,7 +269,7 @@ describe('runtime execution — with variants + compounds, warm cache (hot path,
 
 describe('factory — large variant matrix, 6 dims × 30 compounds (cold path)', () => {
   bench('createPolymorphic', () => {
-    createPolymorphic2({
+    createPolymorphic({
       tag: 'button',
       styling: {
         base: 'btn',
