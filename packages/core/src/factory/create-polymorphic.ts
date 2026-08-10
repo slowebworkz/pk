@@ -100,7 +100,7 @@ function resolveClassPlugin(
   return { pluginResult, classPipeline: guardPipeline(pluginResult.pipeline) }
 }
 
-export function createPolymorphic2<
+export function createPolymorphic<
   TDefault extends ElementType,
   Props extends AnyRecord,
   Variants extends Readonly<VariantMap>,

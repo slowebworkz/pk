@@ -56,11 +56,11 @@ not just what it provides.
   how a pipeline is constructed underneath — only that calling it with resolved options returns
   something callable per render.
 
-**Current status:** `createClassPipeline` (`lib/styling`) is the one production L3 pipeline. A
-second — `packages/core/src/factory/create-polymorphic2.ts`'s `createTagPipeline`/
-`createPropsPipeline`/`createAriaPipeline` — exists as a verified proof-of-concept (behaviorally
-equivalent to `create-polymorphic-full.ts`'s hand-assembled runtime, same 33-test suite) but isn't
-yet the implementation any L4 adapter actually calls; adapters still resolve `createPolymorphic`
-from the pre-`pipeline-kit` implementation. Promoting it is a future step, not yet done.
+**Current status:** two L3 pipelines are in production use — `createClassPipeline` (`lib/styling`)
+and `packages/core/src/factory/create-polymorphic.ts`'s `createTagPipeline`/`createPropsPipeline`/
+`createAriaPipeline`, which back `createPolymorphic` itself (the sole factory every framework
+adapter calls into via `lib/adapter-utils`'s shared `buildCoreRuntime`). The pre-`pipeline-kit`
+hand-assembled runtime this replaced has been fully removed — there is no separate legacy path left
+to fall back to.
 
 Development: `pnpm --filter @praxis-kit/pipeline-kit test`, `typecheck`, `lint`.

@@ -45,15 +45,17 @@ These hold across every render, regardless of which adapter is calling in:
 import { createPolymorphic } from '@praxis-kit/core'
 
 const runtime = createPolymorphic({
-  defaultTag: 'button',
-  variants: { size: { sm: 'text-sm', lg: 'text-lg' } },
-  defaultVariants: { size: 'sm' },
-  displayName: 'Button',
+  tag: 'button',
+  name: 'Button',
+  styling: {
+    variants: { size: { sm: 'text-sm', lg: 'text-lg' } },
+    defaults: { size: 'sm' },
+  },
 })
 ```
 
 `createPolymorphic` normalizes the options, builds the class pipeline, and returns a
-`PolymorphicRuntime` object with three resolver methods and an `options` field.
+`PolymorphicRuntime` object with four resolver methods and an `options` field.
 
 ---
 
@@ -105,13 +107,14 @@ Nothing writes to `ResolvedFactoryOptions` after construction. Every resolver re
 
 The returned `PolymorphicRuntime` exposes:
 
-| Method                                                | What it does                                                                                                                  |
-| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `resolveTag()` / `resolveTag(as)`                     | Returns `as` if provided, otherwise `defaultTag`. Overloaded so the no-argument call returns exactly `TDefault`, not a union. |
-| `resolveProps(props)`                                 | Shallow-merges `defaultProps` under caller props. Caller wins on any key conflict.                                            |
-| `resolveClasses(tag, props, className?, variantKey?)` | Runs the full class pipeline and returns the final class string.                                                              |
-| `options`                                             | The frozen `ResolvedFactoryOptions` — single source of truth for all downstream behavior.                                     |
-| `classPlugin`                                         | Optional instantiated class plugin containing the active class pipeline and ownership metadata.                               |
+| Method                                            | What it does                                                                                                                                 |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `resolveTag()` / `resolveTag(as)`                 | Returns `as` if provided, otherwise `defaultTag`. Overloaded so the no-argument call returns exactly `TDefault`, not a union.                |
+| `resolveProps(props)`                             | Shallow-merges `defaultProps` under caller props. Caller wins on any key conflict.                                                           |
+| `resolveClasses(tag, props, className?, recipe?)` | Runs the full class pipeline and returns the final class string.                                                                             |
+| `resolveAria(tag, props)`                         | Runs the ARIA policy engine (when `enforcement` is configured) and returns the — possibly fixed-up — props.                                  |
+| `options`                                         | The frozen `ResolvedFactoryOptions` — single source of truth for all downstream behavior.                                                    |
+| `classPlugin`                                     | Present only when `styling.plugin` produced one — the instantiated class plugin containing the active class pipeline and ownership metadata. |
 
 ---
 
@@ -171,25 +174,31 @@ tag + props + className? + variantKey?
 
 ## The class plugin system
 
-`createPolymorphic` accepts an optional `classPlugin` field — a `ClassPluginFactory` that replaces
-the default `createClassPipeline` with a custom implementation.
+`createPolymorphic` accepts an optional `styling.plugin` field — a `ClassPluginFactory` that
+replaces the default `createClassPipeline` with a custom implementation.
 
 ```ts
 const runtime = createPolymorphic({
-  defaultTag: 'div',
-  variants: { size: { sm: 'text-sm', lg: 'text-lg' } },
-  classPlugin: (options) => createTailwindPipeline(options),
+  tag: 'div',
+  styling: {
+    variants: { size: { sm: 'text-sm', lg: 'text-lg' } },
+    plugin: (options, diagnostics) => createTailwindPipeline(options, diagnostics),
+  },
 })
 ```
 
 ### ClassPluginFactory
 
 ```ts
-type ClassPluginFactory = <V extends VariantMap>(options: ClassPipelineOptions<V>) => ClassPlugin
+type ClassPluginFactory = <V extends VariantMap>(
+  options: ClassPipelineOptions<V>,
+  diagnostics: Diagnostics,
+) => ClassPlugin
 ```
 
-Called once at `createPolymorphic` time with the resolved `ClassPipelineOptions`. Generic over `V`
-so it stays assignable under `exactOptionalPropertyTypes` regardless of the caller's variant shape.
+Called once at `createPolymorphic` time with the resolved `ClassPipelineOptions` and the component's
+`Diagnostics` instance. Generic over `V` so it stays assignable under `exactOptionalPropertyTypes`
+regardless of the caller's variant shape.
 
 ### ClassPlugin
 

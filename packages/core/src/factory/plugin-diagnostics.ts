@@ -1,9 +1,10 @@
 import type { DiagnosticInput } from '@praxis-kit/diagnostics'
 import { DiagnosticCategory, DiagnosticCode } from '@praxis-kit/diagnostics'
+import { isNull } from '@praxis-kit/primitive'
 
 export const PluginDiagnostics = {
   invalidShape(received: unknown): DiagnosticInput {
-    const got = received === null ? 'null' : typeof received
+    const got = isNull(received) ? 'null' : typeof received
     return {
       code: DiagnosticCode.PluginInvalidShape,
       category: DiagnosticCategory.Internal,
@@ -12,7 +13,7 @@ export const PluginDiagnostics = {
   },
 
   pipelineReturnType(received: unknown): DiagnosticInput {
-    const got = received === null ? 'null' : Array.isArray(received) ? 'array' : typeof received
+    const got = isNull(received) ? 'null' : Array.isArray(received) ? 'array' : typeof received
     return {
       code: DiagnosticCode.PluginPipelineReturnType,
       category: DiagnosticCategory.Internal,

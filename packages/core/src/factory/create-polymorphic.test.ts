@@ -6,7 +6,7 @@ import {
   Severity,
   silentDiagnostics,
 } from '@praxis-kit/diagnostics'
-import { createPolymorphic2 } from './create-polymorphic2'
+import { createPolymorphic } from './create-polymorphic'
 
 function makeCollecting() {
   const reporter = new CollectingReporter()
@@ -27,26 +27,26 @@ function makeCollecting() {
 // resolveTag / resolveProps
 // ---------------------------------------------------------------------------
 
-describe('createPolymorphic2 — resolveTag()', () => {
+describe('createPolymorphic — resolveTag()', () => {
   it('returns defaultTag when no as provided', () => {
-    const runtime = createPolymorphic2({ tag: 'section' })
+    const runtime = createPolymorphic({ tag: 'section' })
     expect(runtime.resolveTag()).toBe('section')
   })
 
   it('returns as when provided', () => {
-    const runtime = createPolymorphic2({ tag: 'div' })
+    const runtime = createPolymorphic({ tag: 'div' })
     expect(runtime.resolveTag('article')).toBe('article')
   })
 })
 
-describe('createPolymorphic2 — resolveProps()', () => {
+describe('createPolymorphic — resolveProps()', () => {
   it('returns instance props unchanged when no defaults configured', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     expect(runtime.resolveProps({ className: 'foo' })).toEqual({ className: 'foo' })
   })
 
   it('fills in defaults that are missing from instance props', () => {
-    const runtime = createPolymorphic2({ defaults: { 'data-testid': 'card' } as never })
+    const runtime = createPolymorphic({ defaults: { 'data-testid': 'card' } as never })
     expect(runtime.resolveProps({})).toMatchObject({ 'data-testid': 'card' })
   })
 })
@@ -55,14 +55,14 @@ describe('createPolymorphic2 — resolveProps()', () => {
 // resolveClasses
 // ---------------------------------------------------------------------------
 
-describe('createPolymorphic2 — resolveClasses()', () => {
+describe('createPolymorphic — resolveClasses()', () => {
   it('returns base class', () => {
-    const runtime = createPolymorphic2({ styling: { base: 'rounded-lg' } })
+    const runtime = createPolymorphic({ styling: { base: 'rounded-lg' } })
     expect(runtime.resolveClasses('div', {})).toContain('rounded-lg')
   })
 
   it('applies variant classes', () => {
-    const runtime = createPolymorphic2({
+    const runtime = createPolymorphic({
       styling: {
         base: 'base',
         variants: { size: { sm: 'text-sm', lg: 'text-lg' } },
@@ -77,15 +77,15 @@ describe('createPolymorphic2 — resolveClasses()', () => {
 // resolveAria
 // ---------------------------------------------------------------------------
 
-describe('createPolymorphic2 — resolveAria()', () => {
+describe('createPolymorphic — resolveAria()', () => {
   it('passes props through unchanged when no enforcement config', () => {
-    const runtime = createPolymorphic2({ tag: 'button' })
+    const runtime = createPolymorphic({ tag: 'button' })
     const props = { 'aria-checked': 'true' }
     expect(runtime.resolveAria('button', props).props).toMatchObject({ 'aria-checked': 'true' })
   })
 
   it('strips an invalid aria-* attribute for the effective role when enforcement is declared', () => {
-    const runtime = createPolymorphic2({
+    const runtime = createPolymorphic({
       tag: 'button',
       enforcement: { diagnostics: silentDiagnostics },
     })
@@ -121,7 +121,7 @@ describe('createPolymorphic2 — resolveAria()', () => {
     )
     // 'span' has no implicit role and no explicit role prop — the exact "roleless" case
     // enforcement.rules must still run for (see finding #14).
-    const runtime = createPolymorphic2({
+    const runtime = createPolymorphic({
       tag: 'span',
       enforcement: { diagnostics: silentDiagnostics, rules: [stripDataUnsafe] },
     })
@@ -147,7 +147,7 @@ describe('createPolymorphic2 — resolveAria()', () => {
       },
     ]
     const { reporter, diagnostics } = makeCollecting()
-    const runtime = createPolymorphic2({
+    const runtime = createPolymorphic({
       tag: 'button',
       enforcement: { diagnostics, aria: [failAria], rules: [failRule] },
     })
@@ -162,9 +162,9 @@ describe('createPolymorphic2 — resolveAria()', () => {
 // options
 // ---------------------------------------------------------------------------
 
-describe('createPolymorphic2 — options', () => {
+describe('createPolymorphic — options', () => {
   it('exposes frozen runtime options', () => {
-    const runtime = createPolymorphic2({ tag: 'section' })
+    const runtime = createPolymorphic({ tag: 'section' })
     expect(runtime.options.defaultTag).toBe('section')
     expect(Object.isFrozen(runtime.options)).toBe(true)
   })
@@ -174,9 +174,9 @@ describe('createPolymorphic2 — options', () => {
 // plugin contract — resolveClassPlugin wiring
 // ---------------------------------------------------------------------------
 
-describe('createPolymorphic2 — plugin contract', () => {
+describe('createPolymorphic — plugin contract', () => {
   it('accepts a well-formed plugin factory and sets hasStyling/classPlugin', () => {
-    const runtime = createPolymorphic2({
+    const runtime = createPolymorphic({
       styling: {
         plugin: () => ({
           pipeline: (_tag, _props, cls) => (Array.isArray(cls) ? cls.join(' ') : (cls ?? '')),
@@ -188,13 +188,13 @@ describe('createPolymorphic2 — plugin contract', () => {
   })
 
   it('throws at factory time when the plugin factory returns null', () => {
-    expect(() => createPolymorphic2({ styling: { plugin: () => null as never } })).toThrow(
+    expect(() => createPolymorphic({ styling: { plugin: () => null as never } })).toThrow(
       "Plugin factory must return an object with a 'pipeline' function. Got: null.",
     )
   })
 
   it("uses the plugin's pipeline to resolve classes", () => {
-    const runtime = createPolymorphic2({
+    const runtime = createPolymorphic({
       styling: { plugin: () => ({ pipeline: () => 'plugin-output' }) },
     })
     expect(runtime.resolveClasses('div', {})).toBe('plugin-output')
@@ -205,25 +205,25 @@ describe('createPolymorphic2 — plugin contract', () => {
 // Built-in HTML prop normalizers
 // ---------------------------------------------------------------------------
 
-describe('createPolymorphic2 — options.htmlPropNormalizersFn', () => {
+describe('createPolymorphic — options.htmlPropNormalizersFn', () => {
   it('is present regardless of enforcement config', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     expect(typeof runtime.options.htmlPropNormalizersFn).toBe('function')
   })
 
   it('returns built-in normalizers for a form tag', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     const normalizers = runtime.options.htmlPropNormalizersFn?.('button')
     expect(normalizers?.length).toBeGreaterThan(0)
   })
 
   it('returns undefined for a tag with no built-in normalizers', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     expect(runtime.options.htmlPropNormalizersFn?.('div')).toBeUndefined()
   })
 
   it('applying the disabled-button normalizer adds aria-disabled', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     const normalizers = runtime.options.htmlPropNormalizersFn?.('button') ?? []
     const patched = normalizers.reduce((acc, fn) => ({ ...acc, ...fn(acc) }), { disabled: true })
     expect(patched).toMatchObject({ 'aria-disabled': 'true' })
@@ -234,26 +234,26 @@ describe('createPolymorphic2 — options.htmlPropNormalizersFn', () => {
 // Built-in HTML children evaluators
 // ---------------------------------------------------------------------------
 
-describe('createPolymorphic2 — options.htmlChildrenEvaluatorFn', () => {
+describe('createPolymorphic — options.htmlChildrenEvaluatorFn', () => {
   it('is present regardless of enforcement config', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     expect(typeof runtime.options.htmlChildrenEvaluatorFn).toBe('function')
   })
 
   it('returns a children evaluator for a tag with a built-in content-model contract', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     const evaluator = runtime.options.htmlChildrenEvaluatorFn?.('picture')
     expect(evaluator).toBeDefined()
   })
 
   it('returns undefined for a tag with no built-in content-model contract', () => {
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     expect(runtime.options.htmlChildrenEvaluatorFn?.('div')).toBeUndefined()
   })
 
   it('flags an invalid child against the built-in contract when evaluated', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const runtime = createPolymorphic2({})
+    const runtime = createPolymorphic({})
     // <picture> requires source*, then exactly one <img> — a bare <div> violates that.
     runtime.options.htmlChildrenEvaluatorFn?.('picture')?.evaluate([{ type: 'div' }])
     expect(warn).toHaveBeenCalled()
