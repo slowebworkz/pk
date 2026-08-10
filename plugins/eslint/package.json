@@ -26,7 +26,8 @@
   "dependencies": {
     "@praxis-kit/diagnostics": "workspace:*",
     "@praxis-kit/primitive": "workspace:*",
-    "@typescript-eslint/utils": "catalog:"
+    "@typescript-eslint/utils": "catalog:",
+    "type-fest": "catalog:"
   },
   "peerDependencies": {
     "eslint": ">=9"

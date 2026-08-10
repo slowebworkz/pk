@@ -1,9 +1,11 @@
+import type { ImplicitRoleMap } from '../types'
+
 // Implicit ARIA roles for HTML elements, matching the runtime AriaPolicyEngine.
 // Source: https://www.w3.org/TR/html-aam-1.0/#html-element-role-mappings
 // Only elements with an unconditional implicit role are listed. Conditional
 // mappings (e.g. <a> is "link" only when href is present) are excluded — the
 // runtime engine handles those; a lint rule can only see the static tag name.
-export const IMPLICIT_ROLES: Readonly<Record<string, string>> = {
+export const IMPLICIT_ROLES: ImplicitRoleMap = {
   article: 'article',
   aside: 'complementary',
   button: 'button',

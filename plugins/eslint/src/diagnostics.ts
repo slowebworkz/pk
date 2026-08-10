@@ -1,5 +1,6 @@
 import type { DiagnosticInput } from '@praxis-kit/diagnostics'
 import { DiagnosticCategory, DiagnosticCode } from '@praxis-kit/diagnostics'
+import type { DiagnosticTemplateMap } from './types'
 
 /**
  * ESLint-compatible `{{ }}` template strings for meta.messages.
@@ -47,7 +48,7 @@ export const EslintDiagnosticTemplates = {
     'Multiple enforcement.children rules require position: "last". Only one child can occupy the last position.',
   minSumExceedsCapacity:
     'A rule with position: "only" requires min >= 1, but {{ count }} other rule(s) also require min >= 1. These constraints cannot be satisfied simultaneously.',
-} as const satisfies Record<string, string>
+} as const satisfies DiagnosticTemplateMap
 
 /**
  * Factory functions returning DiagnosticInput for use with the diagnostics reporting system.
