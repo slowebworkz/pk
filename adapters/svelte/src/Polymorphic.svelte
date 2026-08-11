@@ -80,6 +80,14 @@
     return bundle.runtime.resolveAria(tag, ep).props as ResolvedAttributes
   }
 
+  // Unlike buildDomProps above, this intentionally skips normalizeEventKeys and style
+  // serialization — the asChild path hands props straight to a caller-authored snippet, which
+  // spreads them onto its own element via ordinary JSX/attribute semantics, not through
+  // <svelte:element>'s own attribute application; event-handler keys keep their caller-authored
+  // casing (`onClick`, not lowercased to `onclick`), and `style` passes through however the
+  // caller wrote it (object or string), unserialized. See `ResolvedSlotProps<G>`
+  // (types/resolved-slot-props.ts) for the type this produces — it deliberately omits `style`
+  // rather than asserting either shape, for this exact reason.
   function buildSlotProps(props: UnknownProps, classStr: string | undefined): UnknownProps {
     const { role, ...r } = props
     return {
