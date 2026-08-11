@@ -57,6 +57,7 @@
     "publint": "^0.3.21",
     "ts-morph": "catalog:",
     "tsx": "catalog:",
+    "type-fest": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
