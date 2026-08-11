@@ -16,4 +16,5 @@ export type {
   PolymorphicProps,
   PolymorphicComponent,
   CompoundComponent,
+  ContractProps,
 } from './polymorphic-props'
