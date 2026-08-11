@@ -13,6 +13,7 @@ import type {
   VariantsOf,
 } from '@praxis-kit/core'
 import type { StringMap } from '@praxis-kit/primitive'
+import type { HasGenerics, Mode, PickMode } from '@praxis-kit/contract-props'
 import type { RenderCallbackProps } from './props'
 import type { UnknownProps } from './primitives'
 
@@ -205,12 +206,11 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
   (props: PolymorphicProps<G, DefaultOf<G>>): ReactElement
 
   /**
-   * Type-only; never assigned at runtime. Lets `ContractProps` recover `G` from a built
-   * component's value type (`typeof Component`) without needing the original options object in
-   * scope. The fallback overload above pins `React.ComponentProps<typeof Component>` to
-   * normal-mode props only — this marker is what lets `ContractProps<typeof Component, 'asChild'>`
-   * or `'render'` reach the other two render-mode shapes, which `ComponentProps` structurally
-   * cannot resolve for an overloaded function.
+   * Type-only; never assigned at runtime. See `HasGenerics<G>` (`@praxis-kit/contract-props`) for
+   * the full rationale — kept as an inline field rather than `HasGenerics<G> & {...}` because
+   * intersecting it onto this callable type changes how `PolymorphicComponent<any>` (used by
+   * test helpers like `box()`) resolves against concrete instantiations; structurally identical
+   * to `HasGenerics<G>` either way, which is what lets `ContractProps` constrain against it.
    */
   readonly __generics?: G
 
@@ -246,16 +246,15 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
  * `PolymorphicProps<G, 'a'>` when a caller needs a specific non-default `as` — those remain two
  * different questions with two different answers.
  */
-export type ContractProps<
-  T extends { readonly __generics?: PolymorphicGenerics },
-  Mode extends 'normal' | 'asChild' | 'render' = 'normal',
-> = T extends { readonly __generics?: infer G extends PolymorphicGenerics }
-  ? Mode extends 'asChild'
-    ? PolymorphicWithAsChild<G, DefaultOf<G>>
-    : Mode extends 'render'
-      ? PolymorphicWithRender<G, DefaultOf<G>>
-      : PolymorphicProps<G, DefaultOf<G>>
-  : never
+export type ContractProps<T extends HasGenerics<PolymorphicGenerics>, M extends Mode = 'normal'> =
+  T extends HasGenerics<infer G extends PolymorphicGenerics>
+    ? PickMode<
+        M,
+        PolymorphicProps<G, DefaultOf<G>>,
+        PolymorphicWithAsChild<G, DefaultOf<G>>,
+        PolymorphicWithRender<G, DefaultOf<G>>
+      >
+    : never
 
 /**
  * A `PolymorphicComponent<G>` with named sub-components attached, e.g.
