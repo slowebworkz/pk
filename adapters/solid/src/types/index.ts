@@ -17,4 +17,6 @@ export type {
   PolymorphicComponent,
   CompoundComponent,
   ContractProps,
+  ResolvedSlotProps,
+  SlotRenderFn,
 } from './polymorphic-props'

@@ -7,4 +7,11 @@ export type {
   PolymorphicGenerics,
 } from '@praxis-kit/core'
 export type { SolidFactoryOptions } from './solid-options'
-export type { PolymorphicProps, PolymorphicComponent, ContractProps, ElementRef } from './types'
+export type {
+  PolymorphicProps,
+  PolymorphicComponent,
+  ContractProps,
+  ElementRef,
+  ResolvedSlotProps,
+  SlotRenderFn,
+} from './types'
