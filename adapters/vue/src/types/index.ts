@@ -5,6 +5,7 @@ export type {
   PolymorphicComponent,
   PolymorphicProps,
   PolymorphicWithAsChild,
+  ContractProps,
 } from './polymorphic-props'
 export type { UnknownProps, ResolvedProps, FilterPredicate } from './primitives'
 export type { AsProp, AsChildProp, KnownProps } from './props'

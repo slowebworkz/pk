@@ -47,6 +47,7 @@
     "react-dom": "catalog:",
     "vitest": "catalog:",
     "@praxis-kit/core": "workspace:*",
+    "@praxis-kit/contract-props": "workspace:*",
     "@praxis-kit/runtime": "workspace:*",
     "@praxis-kit/pipeline": "workspace:*",
     "@praxis-kit/primitive": "workspace:*",

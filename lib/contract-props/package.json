@@ -1,0 +1,48 @@
+{
+  "name": "@praxis-kit/contract-props",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "eslint . --fix --config eslint.config.ts",
+    "lint:check": "eslint . --config eslint.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:related": "vitest run --changed"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "vitest": "catalog:"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slowebworkz/praxis-kit.git",
+    "directory": "lib/contract-props"
+  },
+  "homepage": "https://github.com/slowebworkz/praxis-kit/tree/main/lib/contract-props#readme",
+  "bugs": {
+    "url": "https://github.com/slowebworkz/praxis-kit/issues"
+  },
+  "license": "MIT",
+  "author": "K Huehn <slowebworkz@gmail.com>",
+  "description": "Framework-agnostic type utilities for recovering Praxis Kit component generics and selecting props by render mode",
+  "keywords": [
+    "praxis-kit",
+    "types",
+    "typescript",
+    "framework-agnostic"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

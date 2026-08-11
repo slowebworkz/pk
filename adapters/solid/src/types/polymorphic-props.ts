@@ -88,3 +88,13 @@ export type CompoundComponent<
 > = PolymorphicComponent<G> & {
   readonly [K in keyof S]: PolymorphicComponent<S[K]>
 }
+
+/**
+ * A component's full prop contract — naming symmetry with React's/Preact's `ContractProps<T,
+ * Mode>` (`@praxis-kit/contract-props`), not a fix for a gap: Solid has no version of the
+ * overload-resolution ceiling those two adapters need a marker to work around. `PolymorphicProps<G,
+ * TAs>` already folds both render modes into one unioned type (rather than two separate types the
+ * way React/Preact split them), and `PolymorphicComponent<G>`'s fallback overload already returns
+ * that whole union — so this alias is just `PolymorphicProps<G>` under a familiar name.
+ */
+export type ContractProps<G extends PolymorphicGenerics> = PolymorphicProps<G>

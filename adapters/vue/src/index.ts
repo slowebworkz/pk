@@ -9,4 +9,9 @@ export type {
 export type { VueFactoryOptions } from './vue-options'
 export { Slottable } from './slot'
 export type { SlottableProps } from './slot'
-export type { PolymorphicProps, PolymorphicWithAsChild, PolymorphicComponent } from './types'
+export type {
+  PolymorphicProps,
+  PolymorphicWithAsChild,
+  PolymorphicComponent,
+  ContractProps,
+} from './types'
