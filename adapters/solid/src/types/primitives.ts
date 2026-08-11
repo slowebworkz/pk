@@ -5,4 +5,3 @@ export type UnknownProps = AnyRecord
 export type ResolvedProps = Readonly<UnknownProps>
 export type { FilterPredicate } from '@praxis-kit/adapter-utils'
 export type SolidElement = JSX.Element
-export type SlotRenderFn = (props: UnknownProps) => SolidElement

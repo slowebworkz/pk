@@ -6,5 +6,5 @@ export type {
   EmptyRecord,
   PolymorphicGenerics,
 } from '@praxis-kit/core'
-export type { SvelteFactoryOptions } from './svelte-options'
-export type { BuiltRuntime, WithChildRules, FilterPredicate, UnknownProps } from './types'
+export type * from './svelte-options'
+export type * from './types'

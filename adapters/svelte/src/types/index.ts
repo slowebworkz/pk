@@ -22,3 +22,4 @@ export type {
   AnyBuiltRuntime,
 } from './built-runtime'
 export type { NormalizedOptions } from './normalized-options'
+export type { GenericsOf, ResolvedSlotProps } from './resolved-slot-props'

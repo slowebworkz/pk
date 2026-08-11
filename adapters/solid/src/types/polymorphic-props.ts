@@ -12,7 +12,7 @@ import type {
   VariantsOf,
 } from '@praxis-kit/core'
 import type { StringMap } from '@praxis-kit/primitive'
-import type { SlotRenderFn, UnknownProps } from './primitives'
+import type { SolidElement, UnknownProps } from './primitives'
 
 export type ElementRef<T extends ElementType> = T extends IntrinsicTag
   ? HTMLElementTagNameMap[T]
@@ -38,6 +38,46 @@ type SharedProps<G extends PolymorphicGenerics, TAs extends ElementType> = Omit<
 > &
   ControlProps<G, TAs>
 
+/**
+ * The exact props object an `asChild` render function receives at runtime, once defaults,
+ * variant classes, and ARIA role resolution have all run — see `buildSlotProps` in `render.tsx`.
+ * `PropsOf<G>` stays `Partial` for the same reason `AsChildProps` below does: the type system
+ * can't prove every prop actually received a default, only that the runtime *tried*. `class` is
+ * narrowed to a plain resolved `string` (not the wider `ClassName` a caller may pass in).
+ *
+ * `ref` is `(el: Element) => void` rather than `AsChildProps.ref`'s bare `unknown` — a render
+ * function's own job is spreading this object directly onto a concrete element (`(props) => <a
+ * {...props} />`), so it needs a callback-ref shape assignable to that element's own `ref` prop
+ * type; contravariance makes an `Element`-typed callback assignable to any more specific one
+ * (`(el: HTMLAnchorElement) => void`, etc.) without knowing `TAs` in advance. `AsChildProps.ref`
+ * itself stays `unknown` on purpose — that field types what a *caller* hands in before the render
+ * function has even run, not what the render function receives back out.
+ *
+ * `role` (the value `buildSlotProps` adds only when `isKnownAriaRole` narrows it) is deliberately
+ * left OFF this type entirely, rather than given any explicit type. Every candidate representation
+ * fails the same way `ref` almost did: Solid's own per-element JSX types (`AnchorHTMLAttributes
+ * ['role']`, etc.) each narrow `role` to only the ARIA roles valid for *that* element, a strict
+ * subset of the full ARIA vocabulary — so a `KnownAriaRole`-typed field fails to spread onto any
+ * of them, and unlike `ref`, there's no contravariance trick available for a plain string-literal
+ * property (`unknown` fails the same assignability check `KnownAriaRole` does; only `any` would
+ * satisfy every per-element union, and this codebase doesn't use `any`). Omitting the key entirely
+ * keeps `{...props}` spreads honest and compiling; a render function that specifically needs to
+ * read `role` off this object needs an explicit, locally-scoped cast to do so. Previously this
+ * whole parameter was bare `UnknownProps`, giving the render function no type checking at all.
+ */
+export type ResolvedSlotProps<G extends PolymorphicGenerics> = Partial<
+  OmitIndexSignature<PropsOf<G>>
+> &
+  OmitIndexSignature<VariantProps<VariantsOf<G>>> & {
+    class?: string | undefined
+    ref?: (el: Element) => void
+  }
+
+/** An `asChild` render function, receiving the fully-resolved `ResolvedSlotProps<G>`. */
+export type SlotRenderFn<G extends PolymorphicGenerics> = (
+  props: ResolvedSlotProps<G>,
+) => SolidElement
+
 // When asChild is true, intrinsic DOM props (type, href, …) are not required — the
 // render function owns the element and its required attributes. PropsOf<G> (component
 // defaults) is made Partial because those values are filled by the runtime; callers
@@ -47,7 +87,7 @@ type AsChildProps<G extends PolymorphicGenerics> = Partial<OmitIndexSignature<Pr
   OmitIndexSignature<VariantProps<VariantsOf<G>>> & {
     as?: never
     asChild: true
-    children: SlotRenderFn
+    children: SlotRenderFn<G>
     class?: ClassName | undefined
     recipe?: keyof RecipeOf<G>
     ref?: unknown
