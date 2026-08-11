@@ -13,6 +13,7 @@ import type {
   VariantsOf,
 } from '@praxis-kit/core'
 import type { StringMap } from '@praxis-kit/primitive'
+import type { HasGenerics, Mode, PickMode } from '@praxis-kit/contract-props'
 import type { UnknownProps } from './primitives'
 
 export type ElementRef<T extends ElementType> = T extends IntrinsicTag
@@ -69,6 +70,16 @@ export type PolymorphicComponent<G extends PolymorphicGenerics> = {
    */
   (props: PolymorphicProps<G, DefaultOf<G>>): AnyVNode
 
+  /**
+   * Type-only; never assigned at runtime. See `HasGenerics<G>` (`@praxis-kit/contract-props`) for
+   * the full rationale — kept as an inline field rather than `HasGenerics<G> & {...}` because
+   * intersecting it onto this callable type changes how `PolymorphicComponent<any>` resolves
+   * against concrete instantiations (confirmed for React's identical shape,
+   * `adapters/react/src/shared/types/polymorphic-props.test.ts`); structurally identical to
+   * `HasGenerics<G>` either way, which is what lets `ContractProps` constrain against it.
+   */
+  readonly __generics?: G
+
   displayName?: string
 }
 
@@ -88,3 +99,30 @@ export type CompoundComponent<
 > = PolymorphicComponent<G> & {
   readonly [K in keyof S]: PolymorphicComponent<S[K]>
 }
+
+/**
+ * Recovers a built `PolymorphicComponent<G>`'s prop shape for a specific render mode, from
+ * outside the file that built it — the missing piece `ComponentProps<typeof Component>` can't
+ * provide, since it always resolves against `PolymorphicComponent`'s normal-mode fallback
+ * overload (see that type's own doc comment).
+ *
+ * No `'render'` mode — Preact has no render-callback render strategy, unlike React.
+ *
+ * ```tsx
+ * const Container = createContractComponent({ tag: 'div', name: 'Container', /* ... *\/ })
+ *
+ * // Normal-mode props (equivalent to ComponentProps<typeof Container>, but works for asChild too):
+ * type ContainerProps = ContractProps<typeof Container>
+ *
+ * // A wrapper that always renders Container with asChild — ComponentProps<typeof Container>
+ * // fails here ("Type 'true' is not assignable to type 'false'"); ContractProps doesn't.
+ * type ContainerAsChildProps = ContractProps<typeof Container, 'asChild'>
+ * ```
+ */
+export type ContractProps<
+  T extends HasGenerics<PolymorphicGenerics>,
+  M extends Exclude<Mode, 'render'> = 'normal',
+> =
+  T extends HasGenerics<infer G extends PolymorphicGenerics>
+    ? PickMode<M, PolymorphicProps<G, DefaultOf<G>>, PolymorphicWithAsChild<G, DefaultOf<G>>, never>
+    : never

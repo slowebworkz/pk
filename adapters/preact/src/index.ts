@@ -12,5 +12,6 @@ export type {
   PolymorphicComponent,
   PolymorphicProps,
   PolymorphicWithAsChild,
+  ContractProps,
   ElementRef,
 } from './types'
