@@ -66,9 +66,10 @@ function resolveDomProps(
   tag: ElementType,
   elementProps: IntrinsicProps,
   runtime: Runtime,
+  normalizedProps: IntrinsicProps,
 ): UnknownProps {
   return isString(tag)
-    ? (runtime.resolveAria(tag, elementProps).props as UnknownProps)
+    ? (runtime.resolveAria(tag, elementProps, normalizedProps).props as UnknownProps)
     : (elementProps as UnknownProps)
 }
 
@@ -157,7 +158,7 @@ export function render<TProps extends KnownProps>({
 
   const domProps = createMemo(() => {
     const ep = buildElementProps(filteredProps(), resolvedClass(), known.ref, known.children)
-    return resolveDomProps(tag(), ep, runtime)
+    return resolveDomProps(tag(), ep, runtime, normalizedProps())
   })
 
   // Dynamic dispatch — tag() and domProps() called directly in JSX so Solid's babel

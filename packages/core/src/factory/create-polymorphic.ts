@@ -97,8 +97,8 @@ export function createPolymorphic<
       return classPipeline(tag, props, className, recipe) || undefined
     },
 
-    resolveAria<P extends IntrinsicProps>(tag: ElementType, props: P) {
-      return resolveAriaFn(tag, props) as { props: P }
+    resolveAria<P extends IntrinsicProps>(tag: ElementType, props: P, extraProps?: IntrinsicProps) {
+      return resolveAriaFn(tag, props, extraProps) as { props: P }
     },
   }
 
