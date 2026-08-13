@@ -20,12 +20,12 @@ function resolveAriaRules(resolved: ResolvedFactoryShape): readonly AriaRule[] {
 }
 
 export const createAriaPipeline: RenderPipeline<
-  [ElementType, IntrinsicProps],
+  [ElementType, IntrinsicProps, IntrinsicProps?],
   AriaPipelineResult
 > = (resolved) => {
   const rules = resolveAriaRules(resolved)
   const engine = new AriaPolicyEngine(resolved.diagnostics, rules.length ? { rules } : undefined)
-  return (tag, props) => engine.validate(tag, props)
+  return (tag, props, extraProps) => engine.validate(tag, props, extraProps)
 }
 
 export const memoizedAriaPipeline = definePipeline(createAriaPipeline)
@@ -33,6 +33,10 @@ export const memoizedAriaPipeline = definePipeline(createAriaPipeline)
 // Used in place of memoizedAriaPipeline's result when a component has no `enforcement` option
 // configured at all — a no-op that echoes props back unchanged, keeping resolveAria's shape
 // uniform regardless of whether enforcement is active.
-export function resolveAriaPassthrough<P extends IntrinsicProps>(_tag: ElementType, props: P) {
+export function resolveAriaPassthrough<P extends IntrinsicProps>(
+  _tag: ElementType,
+  props: P,
+  _extraProps?: IntrinsicProps,
+) {
   return { props }
 }

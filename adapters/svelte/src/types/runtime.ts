@@ -44,7 +44,11 @@ export type ClassResolver = Readonly<{
 }>
 
 export type AriaResolver = Readonly<{
-  resolveAria<P extends IntrinsicProps>(tag: ElementType, props: P): { props: P }
+  resolveAria<P extends IntrinsicProps>(
+    tag: ElementType,
+    props: P,
+    extraProps?: IntrinsicProps,
+  ): { props: P }
 }>
 
 export type Runtime = Readonly<

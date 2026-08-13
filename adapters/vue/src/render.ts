@@ -115,7 +115,11 @@ function renderIntrinsic(
   elementRef: ((element: Element | null) => void) | undefined,
 ): VNode {
   const elementProps = buildElementProps(state.props, state.className, elementRef)
-  const domProps = runtime.resolveAria(state.tag as string, elementProps).props
+  const domProps = runtime.resolveAria(
+    state.tag as string,
+    elementProps,
+    state.normalizedProps,
+  ).props
   return h(state.tag, domProps, slots.default ? { default: slots.default } : undefined)
 }
 

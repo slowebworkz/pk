@@ -193,6 +193,7 @@ export class AriaPolicyEngine extends InvariantBase {
     tag: AnyTag,
     props: IntrinsicProps,
     extraRules: readonly AriaRule[],
+    extraProps?: IntrinsicProps,
   ): ValidationResult {
     const derived = AriaPolicyEngine.#deriveContext(tag, props)
     if (!derived.proceed) return derived.result
@@ -208,10 +209,22 @@ export class AriaPolicyEngine extends InvariantBase {
     // a consumer's own extraRules may have no relationship to roles at all (an attribute-type
     // fact, a security check) — they must always run, regardless of whether this element has any
     // ARIA semantics.
-    const rules = derived.hasRole
-      ? [...AriaPolicyEngine.#getRules(context), ...extraRules]
-      : extraRules
-    const { violations, fixes } = AriaPolicyEngine.#runRules(rules, context)
+    const builtinRules = derived.hasRole ? AriaPolicyEngine.#getRules(context) : []
+    const builtin = AriaPolicyEngine.#runRules(builtinRules, context)
+
+    // extraRules (a consumer's own `enforcement.aria`/`enforcement.rules`) read `extraProps`
+    // instead of `context.props` when the caller supplies it — the pre-variant-filter props
+    // object (the same one `normalize()` already receives), not the DOM-bound `workingProps`
+    // built-in rules evaluate against. This lets a rule read a variant-only prop (e.g. a
+    // styling-only `float`/`width`) the way `normalize` already can. Fixes still apply against
+    // `workingProps` below, so a fix can only ever add/remove real DOM-bound attributes — a
+    // variant key read here can never leak into the returned props.
+    const extraContext: AriaContext =
+      extraProps === undefined ? context : { ...context, props: extraProps }
+    const extra = AriaPolicyEngine.#runRules(extraRules, extraContext)
+
+    const violations = [...builtin.violations, ...extra.violations]
+    const fixes = [...builtin.fixes, ...extra.fixes]
     const next = AriaPolicyEngine.#applyFixes(narrowedTag, implicitRole, workingProps, fixes)
     return { props: next, violations: [...preExistingViolations, ...violations] }
   }
@@ -302,16 +315,23 @@ export class AriaPolicyEngine extends InvariantBase {
     return next as unknown as T
   }
 
-  validate(tag: AnyTag, props: IntrinsicProps): ValidationResult {
+  // `extraProps`, when supplied, is the pre-variant-filter props object (the same one
+  // `normalize()` receives) — used only as the evaluation context for this engine's own
+  // #extraRules (a consumer's `enforcement.aria`/`enforcement.rules`), never for the built-in
+  // role-semantic pipeline or for the props a fix can apply to. Defaults to `props` so callers
+  // that don't have a separate pre-filter object (or don't need one) see unchanged behavior.
+  validate(tag: AnyTag, props: IntrinsicProps, extraProps?: IntrinsicProps): ValidationResult {
+    const ruleProps = extraProps ?? props
     // Custom `enforcement.aria` rules (#extraRules) may read arbitrary props that
     // #createPlanKey doesn't encode (it only covers what the built-in pipeline reads). A rule
     // that declares `readsProps` opts back into caching — its declared props get folded into
-    // the key. Any extra rule without `readsProps` is assumed unsafe to cache and bypasses the
-    // plan cache entirely for this validate() call.
+    // the key, read off `ruleProps` since that's what the rule itself actually sees. Any extra
+    // rule without `readsProps` is assumed unsafe to cache and bypasses the plan cache entirely
+    // for this validate() call.
     const baseKey = AriaPolicyEngine.#createPlanKey(tag, props)
     let key: string | null = baseKey
     if (this.#extraRules.length > 0) {
-      const suffix = AriaPolicyEngine.#extraRulesKeySuffix(this.#extraRules, props)
+      const suffix = AriaPolicyEngine.#extraRulesKeySuffix(this.#extraRules, ruleProps)
       key = isNonNull(baseKey) && isNonNull(suffix) ? `${baseKey}|${suffix}` : null
     }
 
@@ -327,7 +347,7 @@ export class AriaPolicyEngine extends InvariantBase {
     }
 
     const result = this.#extraRules.length
-      ? AriaPolicyEngine.#evaluateWithRules(tag, props, this.#extraRules)
+      ? AriaPolicyEngine.#evaluateWithRules(tag, props, this.#extraRules, extraProps)
       : AriaPolicyEngine.evaluate(tag, props)
 
     if (result.violations.length > 0) this.report(result.violations)

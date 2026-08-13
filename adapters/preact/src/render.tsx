@@ -192,7 +192,7 @@ function renderIntrinsic(
   const elementProps = buildElementProps(state.props, state.className, ref, state.children)
   const domProps =
     typeof state.tag === 'string'
-      ? runtime.resolveAria(state.tag, elementProps).props
+      ? runtime.resolveAria(state.tag, elementProps, state.normalizedProps).props
       : elementProps
   return h(state.tag, domProps)
 }

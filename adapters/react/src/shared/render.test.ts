@@ -145,6 +145,32 @@ describe('render', () => {
     expect(props['data-keep']).toBe('yes')
   })
 
+  it('passes resolveAria the pre-filter normalized props, not the variant-stripped ones', () => {
+    // Regression test: a component's own `enforcement.aria`/`enforcement.rules` custom rules
+    // must be able to read a variant-only prop (e.g. a styling-only `size`) even though the
+    // DOM-bound props passed as resolveAria's second argument have already had it stripped.
+    const calls: Array<[unknown, Record<string, unknown> | undefined]> = []
+    render({
+      runtime: makeRuntime({
+        resolveAria: (_tag, props, extraProps) => {
+          calls.push([props, extraProps as Record<string, unknown> | undefined])
+          return { props }
+        },
+      }),
+      props: { size: 'lg', 'data-keep': 'yes' },
+      ref: null,
+      slotComponent,
+      normalizeChildren: noopNormalize,
+      filterProps: (key) => key === 'size',
+      slotValidator: defaultValidator,
+    })
+    expect(calls).toHaveLength(1)
+    const [domProps, extraProps] = calls[0] as [Record<string, unknown>, Record<string, unknown>]
+    expect(domProps['size']).toBeUndefined()
+    expect(extraProps['size']).toBe('lg')
+    expect(extraProps['data-keep']).toBe('yes')
+  })
+
   it('throws when as and asChild are both set', () => {
     expect(() =>
       render({

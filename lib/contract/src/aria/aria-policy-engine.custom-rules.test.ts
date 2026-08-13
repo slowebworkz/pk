@@ -309,4 +309,75 @@ describe('AriaPolicyEngine — custom rules via constructor', () => {
     v.validate('input', { type: 'checkbox' } as never)
     expect(calls).toHaveBeenCalledTimes(1)
   })
+
+  it('lets a custom rule read a variant-only prop via the extraProps argument', () => {
+    // Regression test for the finding this fixes: a component's variant keys (e.g. a
+    // styling-only `float`) are stripped from `props` before the DOM-bound render pipeline
+    // reaches resolveAria, so an extra rule relying on `context.props.float` alone would
+    // always see `undefined`. Passing the pre-filter object as `extraProps` fixes that
+    // without letting the variant key leak into the returned (DOM-bound) props.
+    const seenFloat: unknown[] = []
+    const floatWidthRule = (ctx: { props: AnyRecord }) => {
+      seenFloat.push(ctx.props.float)
+      if (ctx.props.float === 'left' && ctx.props.width === 'full') {
+        return [
+          {
+            valid: false as const,
+            severity: 'warning' as const,
+            message: 'float + width=full is self-contradictory',
+            fixable: false as const,
+          },
+        ]
+      }
+      return [{ valid: true as const }]
+    }
+    const v = new AriaPolicyEngine(silentDiagnostics, { rules: [floatWidthRule] })
+
+    // `props` here mirrors what the DOM-bound pipeline actually passes: `float`/`width`
+    // already stripped by variant filtering.
+    const filteredProps = {} as never
+    const fullProps = { float: 'left', width: 'full' } as never
+
+    const { violations, props } = v.validate('figure', filteredProps, fullProps)
+
+    expect(seenFloat).toContain('left')
+    expect(violations.some((v) => v.message === 'float + width=full is self-contradictory')).toBe(
+      true,
+    )
+    // The variant-only prop the rule read must never leak into the returned/DOM-bound props.
+    expect(props).not.toHaveProperty('float')
+    expect(props).not.toHaveProperty('width')
+  })
+
+  it('folds extraProps (not the filtered props) into the plan-cache key when a rule declares readsProps', () => {
+    const calls = vi.fn()
+    const floatRule = Object.assign(
+      (ctx: { props: AnyRecord }) => {
+        calls()
+        return ctx.props.float === 'left'
+          ? [
+              {
+                valid: false as const,
+                severity: 'warning' as const,
+                message: 'left float',
+                fixable: false as const,
+              },
+            ]
+          : [{ valid: true as const }]
+      },
+      { readsProps: ['float'] as const },
+    )
+    const v = new AriaPolicyEngine(silentDiagnostics, { rules: [floatRule] })
+
+    const left = v.validate('figure', {} as never, { float: 'left' } as never)
+    expect(left.violations.some((v) => v.message === 'left float')).toBe(true)
+    const right = v.validate('figure', {} as never, { float: 'right' } as never)
+    expect(right.violations).toHaveLength(0)
+    expect(calls).toHaveBeenCalledTimes(2)
+
+    // Same extraProps as the first call — should hit the cache, not re-invoke the rule.
+    const leftAgain = v.validate('figure', {} as never, { float: 'left' } as never)
+    expect(leftAgain.violations.some((v) => v.message === 'left float')).toBe(true)
+    expect(calls).toHaveBeenCalledTimes(2)
+  })
 })
