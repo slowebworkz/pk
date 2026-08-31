@@ -73,7 +73,7 @@ catalog:
   solid-js: ^1.9.0
 
   # Svelte
-  svelte: ^5.56.3
+  svelte: ^5.56.10
 
   # Architecture tooling
   ts-morph: ^28.0.0
