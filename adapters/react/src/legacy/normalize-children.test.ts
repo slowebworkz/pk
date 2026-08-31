@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { createElement, Fragment } from 'react'
+import { createElement, Fragment, isValidElement } from 'react'
 import { normalizeChildren } from './normalize-children'
+
+// Children.toArray clones every element to re-key it, so identity (`toBe`) checks
+// don't hold — assert on `.type` instead, as the pre-existing tests did.
+const typeOf = (child: unknown): unknown => (isValidElement(child) ? child.type : child)
 
 describe('normalizeChildren (legacy / React 18)', () => {
   it('returns [] for null', () => {
@@ -11,55 +15,53 @@ describe('normalizeChildren (legacy / React 18)', () => {
     expect(normalizeChildren(undefined)).toEqual([])
   })
 
-  it('returns [] for a string', () => {
-    expect(normalizeChildren('text')).toEqual([])
+  it('preserves a non-empty string child', () => {
+    expect(normalizeChildren('Accept terms and conditions')).toEqual([
+      'Accept terms and conditions',
+    ])
+  })
+
+  it('drops a whitespace-only string child', () => {
+    expect(normalizeChildren('   ')).toEqual([])
+  })
+
+  it('preserves a number child', () => {
+    expect(normalizeChildren(42)).toEqual([42])
   })
 
   it('returns [element] for a single valid React element', () => {
-    const el = createElement('span')
-    const result = normalizeChildren(el)
+    const result = normalizeChildren(createElement('span'))
     expect(result).toHaveLength(1)
-    expect(result[0]!.type).toBe('span')
+    expect(typeOf(result[0])).toBe('span')
   })
 
   it('returns elements from a flat array', () => {
-    const a = createElement('span')
-    const b = createElement('div')
-    const result = normalizeChildren([a, b])
-    expect(result).toHaveLength(2)
-    expect(result[0]!.type).toBe('span')
-    expect(result[1]!.type).toBe('div')
+    const result = normalizeChildren([createElement('span'), createElement('div')])
+    expect(result.map(typeOf)).toEqual(['span', 'div'])
   })
 
-  it('filters non-elements from a mixed array', () => {
-    const el = createElement('span')
-    const result = normalizeChildren([el, 'text', null, 42])
-    expect(result).toHaveLength(1)
-    expect(result[0]!.type).toBe('span')
+  it('keeps elements and non-empty text, dropping null/booleans from a mixed array', () => {
+    const result = normalizeChildren([createElement('span'), 'text', null, 42, false, '  '])
+    expect(result.map(typeOf)).toEqual(['span', 'text', 42])
   })
 
   it('returns [] for an empty array', () => {
     expect(normalizeChildren([])).toEqual([])
   })
 
-  // Note: Children.toArray traversed Fragment boundaries in React 18, flattening
-  // their children. In React 19 this behavior was removed — Fragments are returned
-  // as opaque elements, identical to the current/ implementation.
-  it('does NOT flatten Fragment children in React 19 (same as current/)', () => {
-    const inner = createElement('span')
-    const fragment = createElement(Fragment, null, inner)
+  // Note: Children.toArray no longer traverses Fragment boundaries in React 19 —
+  // Fragments are returned as opaque elements, identical to the current/ implementation.
+  it('does NOT flatten Fragment children (same as current/)', () => {
+    const fragment = createElement(Fragment, null, createElement('span'))
     const result = normalizeChildren(fragment)
-    // React 19: Children.toArray no longer traverses Fragments
     expect(result).toHaveLength(1)
-    expect(result[0]!.type).toBe(Fragment)
+    expect(typeOf(result[0])).toBe(Fragment)
   })
 
-  it('treats a Fragment with multiple children as one element in React 19', () => {
-    const a = createElement('span')
-    const b = createElement('div')
-    const fragment = createElement(Fragment, null, a, b)
+  it('treats a Fragment with multiple children as one element', () => {
+    const fragment = createElement(Fragment, null, createElement('span'), createElement('div'))
     const result = normalizeChildren(fragment)
     expect(result).toHaveLength(1)
-    expect(result[0]!.type).toBe(Fragment)
+    expect(typeOf(result[0])).toBe(Fragment)
   })
 })

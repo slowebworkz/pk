@@ -6,7 +6,7 @@
  * dispatched to one of three render paths: render callback, Slot (`asChild`), or intrinsic
  * element.
  */
-import { createElement } from 'react'
+import { createElement, isValidElement } from 'react'
 import { jsx } from 'react/jsx-runtime'
 
 import { applyFilter } from '@praxis-kit/adapter-utils'
@@ -218,7 +218,13 @@ export function render<TProps extends KnownProps>({
 
   // Lazily computed on first access. Child normalization is shared between development
   // validation and Slot rendering so it runs at most once per render.
+  //
+  // The evaluators (both consumer `enforcement.children` rules and the built-in HTML
+  // content-model contracts) get the full normalized list, text nodes included — they
+  // are designed to match text (e.g. labelContract's `accessible-name` rule). The
+  // asChild/Slot path only ever composes onto an element, so it narrows back down.
   const getNormalizedChildren = lazy(() => normalizeChildren(state.children))
+  const getSlotChildren = lazy(() => getNormalizedChildren().filter(isValidElement))
 
   if (process.env.NODE_ENV !== 'production') {
     childrenEvaluator?.evaluate(getNormalizedChildren(), {
@@ -236,13 +242,7 @@ export function render<TProps extends KnownProps>({
     return props.render({ ...state.props, className: state.className, ref })
   }
 
-  const slotResult = tryRenderAsChild(
-    state,
-    ref,
-    slotComponent,
-    getNormalizedChildren,
-    slotValidator,
-  )
+  const slotResult = tryRenderAsChild(state, ref, slotComponent, getSlotChildren, slotValidator)
 
   return slotResult ?? renderIntrinsic(state, ref, runtime)
 }

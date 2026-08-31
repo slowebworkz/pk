@@ -1,8 +1,7 @@
 import type { PolymorphicGenerics } from '@praxis-kit/core'
 import type { BuiltChildrenEvaluator, WithChildRules } from '@praxis-kit/adapter-utils'
-import type { ReactElement } from 'react'
 import type { SlotValidator } from '../slot'
-import type { FilterPredicate, SlotComponent } from './primitives'
+import type { FilterPredicate, NormalizedChild, SlotComponent } from './primitives'
 import type { TypedRuntime } from './runtime'
 
 export type BuiltRuntime<
@@ -11,7 +10,7 @@ export type BuiltRuntime<
 > = BuiltChildrenEvaluator<TOptions> & {
   runtime: TypedRuntime<G>
   slotComponent: SlotComponent
-  normalizeChildren: (children: unknown) => ReactElement[]
+  normalizeChildren: (children: unknown) => NormalizedChild[]
   slotValidator: SlotValidator
   filterProps: FilterPredicate
 }

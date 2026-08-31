@@ -11,12 +11,18 @@ describe('normalizeChildren (current / React 19)', () => {
     expect(normalizeChildren(undefined)).toEqual([])
   })
 
-  it('returns [] for a string', () => {
-    expect(normalizeChildren('text')).toEqual([])
+  it('preserves a non-empty string child', () => {
+    expect(normalizeChildren('Accept terms and conditions')).toEqual([
+      'Accept terms and conditions',
+    ])
   })
 
-  it('returns [] for a number', () => {
-    expect(normalizeChildren(42)).toEqual([])
+  it('drops a whitespace-only string child', () => {
+    expect(normalizeChildren('   ')).toEqual([])
+  })
+
+  it('preserves a number child', () => {
+    expect(normalizeChildren(42)).toEqual([42])
   })
 
   it('returns [element] for a single valid React element', () => {
@@ -35,11 +41,10 @@ describe('normalizeChildren (current / React 19)', () => {
     expect(result[1]).toBe(b)
   })
 
-  it('filters non-elements from a mixed array', () => {
+  it('keeps elements and non-empty text, dropping null/booleans from a mixed array', () => {
     const el = createElement('span')
-    const result = normalizeChildren([el, 'text', null, 42])
-    expect(result).toHaveLength(1)
-    expect(result[0]).toBe(el)
+    const result = normalizeChildren([el, 'text', null, 42, false, '  '])
+    expect(result).toEqual([el, 'text', 42])
   })
 
   it('returns [] for an empty array', () => {
@@ -56,10 +61,7 @@ describe('normalizeChildren (current / React 19)', () => {
     expect(result[0]).toBe(fragment)
   })
 
-  it('returns [] for a fragment passed inside an array with no other elements', () => {
-    // A fragment in an array position is not a valid element at the top level of asChild
-    // because asChild expects exactly one element; the fragment wrapping is transparent
-    // in legacy but opaque here.
+  it('returns the fragment for a fragment passed inside an array', () => {
     const fragment = createElement(Fragment, null, createElement('span'))
     // Fragment IS a valid React element, so it passes isValidElement
     const result = normalizeChildren([fragment])
