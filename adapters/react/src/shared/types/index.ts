@@ -11,6 +11,7 @@ export type {
 } from './polymorphic-props'
 export type {
   FilterPredicate,
+  NormalizedChild,
   NormalizeChildren,
   ResolvedProps,
   SlotComponent,

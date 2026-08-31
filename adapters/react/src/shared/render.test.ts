@@ -3,8 +3,10 @@ import { createElement, isValidElement } from 'react'
 import type { ReactElement } from 'react'
 import { throwDiagnostics, warnDiagnostics, silentDiagnostics } from '@praxis-kit/diagnostics'
 import { render } from './render'
+import { normalizeChildren as realNormalizeChildren } from '../current/normalize-children'
 import { Slottable } from './slot'
 import { SlotValidator } from '@praxis-kit/adapter-utils'
+import type { ChildrenEvaluator } from '@praxis-kit/core'
 import type { FilterPredicate, Runtime } from './types'
 
 function makeRuntime(overrides?: Partial<Runtime>): Runtime {
@@ -397,6 +399,47 @@ describe('render', () => {
         slotValidator: defaultValidator,
       }),
     ).not.toThrow()
+  })
+
+  it('childrenEvaluator receives non-empty text children (contract accessible-name path)', () => {
+    // Regression for the finding where the React adapter's normalizeChildren stripped every
+    // string child before contract evaluation, making labelContract's `accessible-name` rule
+    // false-fire on the ordinary `<Label>Some text</Label>` case.
+    const evaluate = vi.fn()
+    const childrenEvaluator = { evaluate } as unknown as ChildrenEvaluator
+    render({
+      runtime: makeRuntime(),
+      props: { children: 'Accept terms and conditions' },
+      ref: null,
+      slotComponent,
+      normalizeChildren: realNormalizeChildren,
+      filterProps: noopFilter,
+      slotValidator: defaultValidator,
+      childrenEvaluator,
+    })
+    expect(evaluate).toHaveBeenCalledWith(['Accept terms and conditions'], expect.anything())
+  })
+
+  it('asChild slot path still narrows to elements, ignoring sibling text', () => {
+    const child = createElement('button', { type: 'submit' })
+    const el = render({
+      runtime: makeRuntime({
+        options: {
+          defaultTag: 'div',
+          variantKeys: new Set(),
+          displayName: 'Test',
+          diagnostics: silentDiagnostics,
+        },
+      }),
+      props: { asChild: true, children: ['keep me', child] },
+      ref: null,
+      slotComponent,
+      normalizeChildren: realNormalizeChildren,
+      filterProps: noopFilter,
+      slotValidator: new SlotValidator('Test', silentDiagnostics, 'React element'),
+    })
+    expect(el.type).toBe(slotComponent)
+    expect((el.props as { children: unknown }).children).toBe(child)
   })
 
   it('control props (as, asChild, className, recipe, children) are not forwarded to the DOM', () => {
