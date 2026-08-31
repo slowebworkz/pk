@@ -14,6 +14,10 @@ type TokenData = {
   layout: { value: LayoutKey<typeof layoutKeys> }
   conditional: { requires: Exclude<LayoutFamily<typeof LAYOUT_FAMILY_MAP>, 'none'> }
   gap: EmptyRecord
+  // Flex/grid *item* properties (align-self, order, grid-row/column, flex-grow,
+  // ...). These resolve against the element's PARENT display mode, which this
+  // plugin can't observe, so they must never be stripped by own-family filtering.
+  item: EmptyRecord
   shared: EmptyRecord
   utility: { base: string }
 }
@@ -25,6 +29,7 @@ type TokenMap = {
 export type LayoutToken = TokenMap['layout']
 export type ConditionalToken = TokenMap['conditional']
 export type GapToken = TokenMap['gap']
+export type ItemToken = TokenMap['item']
 export type SharedToken = TokenMap['shared']
 export type UtilityToken = TokenMap['utility']
 

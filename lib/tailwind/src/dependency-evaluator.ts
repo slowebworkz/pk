@@ -27,6 +27,13 @@ export class DependencyEvaluator {
         )
       }
 
+      case 'item': {
+        // Item/placement properties resolve against the element's PARENT display
+        // mode, which this pipeline can't see — never strip them based on the
+        // element's own family. See PRAXIS-KIT-FINDINGS.md #40.
+        return true
+      }
+
       case 'gap':
       case 'shared': {
         return state.family !== 'none'

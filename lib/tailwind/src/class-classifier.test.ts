@@ -20,6 +20,10 @@ function expectShared(token: string) {
   expect(c.classify(token)).toEqual({ kind: 'shared', raw: token })
 }
 
+function expectItem(token: string) {
+  expect(c.classify(token)).toEqual({ kind: 'item', raw: token })
+}
+
 function expectConditional(token: string, requires: 'flex' | 'grid') {
   expect(c.classify(token)).toEqual({ kind: 'conditional', requires, raw: token })
 }
@@ -58,30 +62,49 @@ describe('ClassClassifier — gap tokens', () => {
   })
 })
 
-describe('ClassClassifier — shared (flex-or-grid) tokens', () => {
+describe('ClassClassifier — shared (flex-or-grid container) tokens', () => {
   it.each([
-    'order-1',
-    'order-first',
     'justify-center',
     'justify-between',
     'content-start',
     'items-start',
     'items-center',
-    'self-end',
     'place-content-center',
     'place-items-center',
-    'place-self-stretch',
     'hover:items-start',
   ])('classifies "%s" as shared', (token) => {
     expectShared(token)
   })
 
-  it.each(['justify-items-start', 'justify-self-center'])(
-    'classifies "%s" as utility, not shared (grid-only)',
-    (token) => {
-      expectUtility(token)
-    },
-  )
+  it('classifies "justify-items-start" as utility, not shared (grid-container-only)', () => {
+    expectUtility('justify-items-start')
+  })
+})
+
+describe('ClassClassifier — item (parent-resolved) tokens (#40)', () => {
+  it.each([
+    'order-1',
+    'order-first',
+    'order-none',
+    'self-end',
+    'self-center',
+    'place-self-stretch',
+    'justify-self-center',
+    'justify-self-end',
+    'grow',
+    'grow-0',
+    'shrink',
+    'shrink-0',
+    'basis-1/2',
+    'basis-full',
+    'col-span-2',
+    'col-start-1',
+    'row-span-3',
+    'row-end-4',
+    'hover:self-end',
+  ])('classifies "%s" as item', (token) => {
+    expectItem(token)
+  })
 
   it.each(["content-['<']", "content-['>']", 'content-none'])(
     'classifies "%s" as utility, not shared (CSS content property, not flex/grid content-*)',
@@ -113,7 +136,7 @@ describe('ClassClassifier — utility tokens', () => {
     ['rounded', 'rounded'],
     ['flex-col', 'flex-col'],
     ['grid-cols-3', 'grid-cols-3'],
-    ['grow', 'grow'],
+    ['auto-cols-fr', 'auto-cols-fr'],
     ['hover:flex-col', 'flex-col'],
     ['data-[orientation=horizontal]:flex-row', 'flex-row'],
     ['data-[foo:bar]:grid-cols-3', 'grid-cols-3'],

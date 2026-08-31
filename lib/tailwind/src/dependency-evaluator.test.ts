@@ -156,22 +156,41 @@ describe('DependencyEvaluator — gap tokens', () => {
   it('blocks gap when mode is none', () => expect(ev.evaluate(gap, noneState)).toBe(false))
 })
 
-describe('DependencyEvaluator — shared (flex-or-grid) tokens', () => {
+describe('DependencyEvaluator — shared (flex-or-grid container) tokens', () => {
   for (const raw of [
     'items-start',
     'justify-center',
     'content-start',
-    'self-end',
-    'order-1',
     'place-content-center',
     'place-items-center',
-    'place-self-stretch',
   ]) {
     const t = tok({ kind: 'shared', raw })
 
     it(`passes ${raw} when mode is flex`, () => expect(ev.evaluate(t, flexState)).toBe(true))
     it(`passes ${raw} when mode is grid`, () => expect(ev.evaluate(t, gridState)).toBe(true))
     it(`blocks ${raw} when mode is none`, () => expect(ev.evaluate(t, noneState)).toBe(false))
+  }
+})
+
+describe('DependencyEvaluator — item (parent-resolved) tokens (#40)', () => {
+  for (const raw of [
+    'self-end',
+    'place-self-stretch',
+    'justify-self-center',
+    'order-1',
+    'grow',
+    'shrink-0',
+    'basis-1/2',
+    'col-span-2',
+    'row-start-1',
+  ]) {
+    const t = tok({ kind: 'item', raw })
+
+    // Item properties resolve against the parent's family, which the pipeline
+    // can't observe — they always survive regardless of the element's own mode.
+    it(`survives ${raw} in flex mode`, () => expect(ev.evaluate(t, flexState)).toBe(true))
+    it(`survives ${raw} in grid mode`, () => expect(ev.evaluate(t, gridState)).toBe(true))
+    it(`survives ${raw} in none mode`, () => expect(ev.evaluate(t, noneState)).toBe(true))
   }
 })
 

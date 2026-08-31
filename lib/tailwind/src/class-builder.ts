@@ -16,6 +16,7 @@ export class ClassBuilder {
 
         case 'utility':
         case 'gap':
+        case 'item':
         case 'shared':
         case 'conditional': {
           normal.push(token.raw)

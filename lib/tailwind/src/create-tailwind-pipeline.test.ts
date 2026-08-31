@@ -40,12 +40,45 @@ describe('createTailwindPipeline — none mode (no layout prop)', () => {
     expect(cls).toMatch(/\brounded\b/)
   })
 
-  it('strips the grid display literal and grid utilities', () => {
+  it('strips the grid display literal and grid-container utilities, keeps grid-item utilities', () => {
     const cls = resolve(pipeline, 'grid grid-cols-3 col-span-2 rounded')
     expect(cls).not.toMatch(/\bgrid\b/)
     expect(cls).not.toMatch(/\bgrid-cols-3\b/)
-    expect(cls).not.toMatch(/\bcol-span-2\b/)
+    // col-span-2 is a grid *item* property — resolved against the parent, which
+    // this pipeline can't see, so it's never stripped by own-family filtering (#40).
+    expect(cls).toMatch(/\bcol-span-2\b/)
     expect(cls).toMatch(/\brounded\b/)
+  })
+})
+
+describe('createTailwindPipeline — flex/grid item utilities (#40)', () => {
+  const pipeline = createTailwindPipeline({}, silentDiagnostics)
+
+  // Item/placement properties resolve against the PARENT's display mode, which
+  // this pipeline can't observe. A plain block-level child of someone else's
+  // flex/grid container legitimately needs self-center / col-span-2 / grow to
+  // work, so own-family filtering must never strip them.
+  const itemClasses =
+    'self-center place-self-end justify-self-end order-2 grow shrink-0 basis-1/2 col-span-2 row-start-1'
+
+  it.each([
+    ['none (no display prop)', {}],
+    ['block', { block: true }],
+    ['hidden', { hidden: true }],
+    ['flex', { flex: true }],
+    ['grid', { grid: true }],
+  ] as const)('preserves every item utility under %s', (_label, props) => {
+    const cls = (resolve(pipeline, itemClasses, props) ?? '').split(/\s+/)
+    for (const c of itemClasses.split(' ')) {
+      expect(cls).toContain(c)
+    }
+  })
+
+  it('still strips container utilities for the wrong family alongside surviving item utilities', () => {
+    const cls = resolve(pipeline, 'grid-cols-3 col-span-2 self-center', { flex: true })
+    expect(cls).not.toMatch(/\bgrid-cols-3\b/)
+    expect(cls).toMatch(/\bcol-span-2\b/)
+    expect(cls).toMatch(/\bself-center\b/)
   })
 })
 
@@ -56,15 +89,16 @@ describe('createTailwindPipeline — flex active', () => {
     expect(resolve(pipeline, 'rounded', { flex: true })).toMatch(/\bflex\b/)
   })
 
-  it('strips grid-exclusive classes', () => {
+  it('strips grid-container classes, keeps grid-item classes', () => {
     const cls = resolve(pipeline, 'grid grid-cols-3 col-span-2 row-span-1 auto-cols-fr', {
       flex: true,
     })
     expect(cls).not.toMatch(/\bgrid\b/)
     expect(cls).not.toMatch(/\bgrid-cols-3\b/)
-    expect(cls).not.toMatch(/\bcol-span-2\b/)
-    expect(cls).not.toMatch(/\brow-span-1\b/)
     expect(cls).not.toMatch(/\bauto-cols-fr\b/)
+    // Item-placement properties resolve against the parent, not this element (#40).
+    expect(cls).toMatch(/\bcol-span-2\b/)
+    expect(cls).toMatch(/\brow-span-1\b/)
   })
 
   it('preserves flex-exclusive classes', () => {
@@ -97,15 +131,15 @@ describe('createTailwindPipeline — inline-flex active', () => {
     expect(resolve(pipeline, 'rounded', { 'inline-flex': true })).toMatch(/\binline-flex\b/)
   })
 
-  it('strips grid-exclusive classes', () => {
+  it('strips grid-container classes, keeps grid-item classes', () => {
     const cls = resolve(pipeline, 'grid grid-cols-3 col-span-2 row-span-1 auto-cols-fr', {
       'inline-flex': true,
     })
     expect(cls).not.toMatch(/\bgrid\b/)
     expect(cls).not.toMatch(/\bgrid-cols-3\b/)
-    expect(cls).not.toMatch(/\bcol-span-2\b/)
-    expect(cls).not.toMatch(/\brow-span-1\b/)
     expect(cls).not.toMatch(/\bauto-cols-fr\b/)
+    expect(cls).toMatch(/\bcol-span-2\b/)
+    expect(cls).toMatch(/\brow-span-1\b/)
   })
 
   it('preserves flex-exclusive classes', () => {
@@ -131,13 +165,14 @@ describe('createTailwindPipeline — grid active', () => {
     expect(resolve(pipeline, 'rounded', { grid: true })).toMatch(/\bgrid\b/)
   })
 
-  it('strips flex-exclusive classes', () => {
+  it('strips flex-container classes, keeps flex-item classes', () => {
     const cls = resolve(pipeline, 'flex flex-row grow shrink-0 basis-1/2', { grid: true })
     expect(cls).not.toMatch(/\bflex\b/)
     expect(cls).not.toMatch(/\bflex-row\b/)
-    expect(cls).not.toMatch(/\bgrow\b/)
-    expect(cls).not.toMatch(/\bshrink-0\b/)
-    expect(cls).not.toMatch(/\bbasis-1\/2\b/)
+    // grow/shrink/basis are flex *item* properties — resolved against the parent (#40).
+    expect(cls).toMatch(/\bgrow\b/)
+    expect(cls).toMatch(/\bshrink-0\b/)
+    expect(cls).toMatch(/\bbasis-1\/2\b/)
   })
 
   it('preserves grid-exclusive classes', () => {
@@ -163,13 +198,13 @@ describe('createTailwindPipeline — inline-grid active', () => {
     expect(resolve(pipeline, 'rounded', { 'inline-grid': true })).toMatch(/\binline-grid\b/)
   })
 
-  it('strips flex-exclusive classes', () => {
+  it('strips flex-container classes, keeps flex-item classes', () => {
     const cls = resolve(pipeline, 'flex flex-row grow shrink-0 basis-1/2', { 'inline-grid': true })
     expect(cls).not.toMatch(/\bflex\b/)
     expect(cls).not.toMatch(/\bflex-row\b/)
-    expect(cls).not.toMatch(/\bgrow\b/)
-    expect(cls).not.toMatch(/\bshrink-0\b/)
-    expect(cls).not.toMatch(/\bbasis-1\/2\b/)
+    expect(cls).toMatch(/\bgrow\b/)
+    expect(cls).toMatch(/\bshrink-0\b/)
+    expect(cls).toMatch(/\bbasis-1\/2\b/)
   })
 
   it('preserves grid-exclusive classes', () => {
@@ -197,12 +232,13 @@ describe('createTailwindPipeline — neutral display (block/hidden/etc.)', () =>
     expect(resolve(pipeline, 'rounded', { block: true })).toMatch(/\bblock\b/)
   })
 
-  it('strips both flex-exclusive and grid-exclusive classes when block is active', () => {
+  it('strips flex/grid container classes but keeps item classes when block is active', () => {
     const cls = resolve(pipeline, 'flex-row grow grid-cols-3 col-span-2', { block: true })
     expect(cls).not.toMatch(/\bflex-row\b/)
-    expect(cls).not.toMatch(/\bgrow\b/)
     expect(cls).not.toMatch(/\bgrid-cols-3\b/)
-    expect(cls).not.toMatch(/\bcol-span-2\b/)
+    // grow (flex-item) and col-span-2 (grid-item) resolve against the parent (#40).
+    expect(cls).toMatch(/\bgrow\b/)
+    expect(cls).toMatch(/\bcol-span-2\b/)
   })
 
   it('strips gap when block is active', () => {
@@ -213,11 +249,11 @@ describe('createTailwindPipeline — neutral display (block/hidden/etc.)', () =>
     expect(resolve(pipeline, 'rounded', { hidden: true })).toMatch(/\bhidden\b/)
   })
 
-  it('strips both flex-exclusive and grid-exclusive classes when hidden is active', () => {
+  it('strips flex/grid container classes but keeps item classes when hidden is active', () => {
     const cls = resolve(pipeline, 'flex-row grow grid-cols-3', { hidden: true })
     expect(cls).not.toMatch(/\bflex-row\b/)
-    expect(cls).not.toMatch(/\bgrow\b/)
     expect(cls).not.toMatch(/\bgrid-cols-3\b/)
+    expect(cls).toMatch(/\bgrow\b/)
   })
 
   it('preserves layout-agnostic classes for any neutral display', () => {
