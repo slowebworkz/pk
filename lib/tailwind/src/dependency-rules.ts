@@ -13,17 +13,20 @@ export type DependencyRules = Record<
 // in flex mode purely because it resembles a grid utility. This is the accepted
 // break point: the plugin does not resolve against the Tailwind config. Don't
 // name custom classes after these prefixes if they must survive a mode switch.
+// Only *container* properties belong here — they're meaningful iff the element
+// itself resolves to the family, so own-family gating is correct for them. Item
+// and item-placement properties (grow/shrink/basis, col-*/row-*, justify-self-*,
+// self-*, order-*, place-self-*) resolve against the PARENT's family instead and
+// are classified as `kind: 'item'` in class-classifier.ts so they're never
+// stripped here — see PRAXIS-KIT-FINDINGS.md #40.
 export const defaultDependencyRules: DependencyRules = {
-  flex: [/^flex-/, /^grow/, /^shrink/, /^basis-/],
+  flex: [/^flex-/],
   grid: [
     /^grid-/,
-    /^col-/,
-    /^row-/,
     /^auto-cols-/,
     /^auto-rows-/,
-    // justify-items/-self are no-ops on flex containers per the CSS box
-    // alignment spec (flex items ignore them), so treat as grid-only.
+    // justify-items is a grid-container property (no-op on flex containers per
+    // the CSS box alignment spec), so treat it as grid-only.
     /^justify-items-/,
-    /^justify-self-/,
   ],
 } as const

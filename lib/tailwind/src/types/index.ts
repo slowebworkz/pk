@@ -3,6 +3,7 @@ export type {
   ClassToken,
   ConditionalToken,
   GapToken,
+  ItemToken,
   LayoutToken,
   SharedToken,
   UtilityToken,
