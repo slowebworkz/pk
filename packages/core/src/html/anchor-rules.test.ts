@@ -15,6 +15,7 @@ function ctx(props: Record<string, unknown>, tag = 'a'): AriaContext {
     props,
     implicitRole: undefined,
     effectiveRole: undefined,
+    variantKeys: new Set(),
   }
 }
 

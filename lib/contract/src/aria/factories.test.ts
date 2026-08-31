@@ -13,7 +13,13 @@ import { isString } from '@praxis-kit/primitive'
 import type { AriaContext } from '../types'
 
 function context(props: AriaContext['props']): AriaContext {
-  return { tag: 'a', implicitRole: undefined, effectiveRole: undefined, props }
+  return {
+    tag: 'a',
+    implicitRole: undefined,
+    effectiveRole: undefined,
+    props,
+    variantKeys: new Set(),
+  }
 }
 
 // ── invalidWithoutFix ──────────────────────────────────────────────────────────

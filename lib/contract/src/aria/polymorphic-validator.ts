@@ -35,6 +35,11 @@ export { isInvalid } from '@praxis-kit/primitive'
 
 const NO_VIOLATIONS = [{ valid: true }] as const
 
+// Shared empty set for AriaContext.variantKeys when there is no factory context (the standalone
+// `AriaPolicyEngine.evaluate` path). Keeps the context invariant a plain `ReadonlySet<string>`
+// instead of `ReadonlySet<string> | undefined`, so rules never branch on an absent set.
+const NO_VARIANT_KEYS: ReadonlySet<string> = new Set()
+
 function isIntrinsicTag(tag: AnyTag): tag is IntrinsicTag {
   return isString(tag)
 }
@@ -46,14 +51,22 @@ function omitProp<T extends Readonly<AnyRecord>, K extends keyof T>(obj: T, key:
 
 export class AriaPolicyEngine extends InvariantBase {
   readonly #extraRules: readonly AriaRule[]
+  // The component's declared variant prop names, threaded into every AriaContext so a rule
+  // can tell a variant key apart from a real HTML attribute of the same name (see #39). Fixed
+  // per engine instance, so it never needs to enter the plan cache key.
+  readonly #variantKeys: ReadonlySet<string>
   readonly #planCache = new LRUCache<string, AriaPlan>(100)
   // Memoized AriaFix objects keyed by attribute name — the ARIA attribute set is
   // finite so this Map is bounded and avoids recreating closures on every cache miss.
   static readonly #removeAttributeFixCache = new Map<string, AriaFix>()
 
-  constructor(diagnostics: Diagnostics, options?: { rules?: readonly AriaRule[] }) {
+  constructor(
+    diagnostics: Diagnostics,
+    options?: { rules?: readonly AriaRule[]; variantKeys?: ReadonlySet<string> },
+  ) {
     super(diagnostics)
     this.#extraRules = options?.rules ?? []
+    this.#variantKeys = options?.variantKeys ?? NO_VARIANT_KEYS
   }
 
   static #normalizeEmptyRole(tag: IntrinsicTag, props: IntrinsicProps): NormalizationResult {
@@ -78,7 +91,11 @@ export class AriaPolicyEngine extends InvariantBase {
     }
   }
 
-  static #deriveContext(tag: AnyTag, props: IntrinsicProps): EvaluationContext {
+  static #deriveContext(
+    tag: AnyTag,
+    props: IntrinsicProps,
+    variantKeys: ReadonlySet<string> = NO_VARIANT_KEYS,
+  ): EvaluationContext {
     if (!isIntrinsicTag(tag)) return { proceed: false, result: { props, violations: [] } }
     const implicitRole = getImplicitRole(tag, props)
     // hasRole marks whether the element has native or author-supplied ARIA semantics (implicit
@@ -109,7 +126,7 @@ export class AriaPolicyEngine extends InvariantBase {
       hasRole,
       props: workingProps,
       preExistingViolations,
-      context: { tag, props: workingProps, implicitRole, effectiveRole },
+      context: { tag, props: workingProps, implicitRole, effectiveRole, variantKeys },
     }
   }
 
@@ -194,8 +211,9 @@ export class AriaPolicyEngine extends InvariantBase {
     props: IntrinsicProps,
     extraRules: readonly AriaRule[],
     extraProps?: IntrinsicProps,
+    variantKeys: ReadonlySet<string> = NO_VARIANT_KEYS,
   ): ValidationResult {
-    const derived = AriaPolicyEngine.#deriveContext(tag, props)
+    const derived = AriaPolicyEngine.#deriveContext(tag, props, variantKeys)
     if (!derived.proceed) return derived.result
 
     const {
@@ -225,7 +243,13 @@ export class AriaPolicyEngine extends InvariantBase {
 
     const violations = [...builtin.violations, ...extra.violations]
     const fixes = [...builtin.fixes, ...extra.fixes]
-    const next = AriaPolicyEngine.#applyFixes(narrowedTag, implicitRole, workingProps, fixes)
+    const next = AriaPolicyEngine.#applyFixes(
+      narrowedTag,
+      implicitRole,
+      workingProps,
+      fixes,
+      variantKeys,
+    )
     return { props: next, violations: [...preExistingViolations, ...violations] }
   }
 
@@ -347,7 +371,13 @@ export class AriaPolicyEngine extends InvariantBase {
     }
 
     const result = this.#extraRules.length
-      ? AriaPolicyEngine.#evaluateWithRules(tag, props, this.#extraRules, extraProps)
+      ? AriaPolicyEngine.#evaluateWithRules(
+          tag,
+          props,
+          this.#extraRules,
+          extraProps,
+          this.#variantKeys,
+        )
       : AriaPolicyEngine.evaluate(tag, props)
 
     if (result.violations.length > 0) this.report(result.violations)
@@ -373,13 +403,14 @@ export class AriaPolicyEngine extends InvariantBase {
     implicitRole: AriaContext['implicitRole'],
     props: T,
     fixes: AriaFix[],
+    variantKeys: ReadonlySet<string> = NO_VARIANT_KEYS,
   ): T {
     if (fixes.length === 0) return props
     const sorted = [...fixes].sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity))
     let next: IntrinsicProps = props
     iterate.forEach(sorted, ({ apply }) => {
       const effectiveRole = next.role ?? implicitRole
-      const fixContext: AriaContext = { tag, implicitRole, effectiveRole, props: next }
+      const fixContext: AriaContext = { tag, implicitRole, effectiveRole, props: next, variantKeys }
       const fixResult = apply(fixContext)
       if (fixResult.applied) next = fixResult.next as IntrinsicProps
     })

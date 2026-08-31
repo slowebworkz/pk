@@ -380,4 +380,39 @@ describe('AriaPolicyEngine — custom rules via constructor', () => {
     expect(leftAgain.violations.some((v) => v.message === 'left float')).toBe(true)
     expect(calls).toHaveBeenCalledTimes(2)
   })
+
+  it('threads the engine-configured variantKeys into the rule context, so a rule can skip a same-named variant (#39)', () => {
+    // A rule asserting a fact about a real HTML attribute (`attr in props`) needs to tell a
+    // same-named styling variant apart from the attribute — the variant is stripped before the
+    // DOM, so the fact does not apply. The engine threads its `variantKeys` into every context;
+    // the built-in `createInputAttributeTypeRule` uses exactly this. (Tested against the real
+    // built-in rule in packages/core's input-rules.test.ts, which can import it.)
+    const seen: ReadonlySet<string>[] = []
+    const attrIgnoredRule = (ctx: { props: AnyRecord; variantKeys: ReadonlySet<string> }) => {
+      seen.push(ctx.variantKeys)
+      if (!('size' in ctx.props) || ctx.variantKeys.has('size')) return [{ valid: true as const }]
+      return [
+        {
+          valid: false as const,
+          severity: 'warning' as const,
+          message: 'size ignored',
+          fixable: false as const,
+        },
+      ]
+    }
+    const withVariant = new AriaPolicyEngine(silentDiagnostics, {
+      rules: [attrIgnoredRule],
+      variantKeys: new Set(['size']),
+    })
+    const noVariant = new AriaPolicyEngine(silentDiagnostics, { rules: [attrIgnoredRule] })
+
+    const suppressed = withVariant.validate('input', {} as never, { size: 'lg' } as never)
+    const flagged = noVariant.validate('input', { size: 20 } as never)
+
+    expect(seen[0]?.has('size')).toBe(true)
+    expect(seen[1]).toBeInstanceOf(Set)
+    expect(seen[1]?.size).toBe(0)
+    expect(suppressed.violations).toHaveLength(0)
+    expect(flagged.violations.some((v) => v.message === 'size ignored')).toBe(true)
+  })
 })
