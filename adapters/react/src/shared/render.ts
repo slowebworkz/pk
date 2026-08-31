@@ -9,7 +9,7 @@
 import { createElement, isValidElement } from 'react'
 import { jsx } from 'react/jsx-runtime'
 
-import { applyFilter } from '@praxis-kit/adapter-utils'
+import { applyFilter, resolveNormalizedProps } from '@praxis-kit/adapter-utils'
 import { enforceAllowedAs, isKnownAriaRole } from '@praxis-kit/core'
 import { isFunction, lazy } from '@praxis-kit/primitive'
 
@@ -69,8 +69,9 @@ function buildRenderState(
  * Applies tag resolution, prop merging and normalization, class resolution, prop filtering,
  * and render-directive extraction, producing the canonical state consumed by every render path.
  *
- * HTML built-in normalizers run before the primitive's composed normalizers and the caller's
- * `normalize` option, allowing later normalizers to observe and override built-in output.
+ * Prop normalization is delegated to the shared `resolveNormalizedProps` so ordering (HTML
+ * built-ins first, then the primitive's composed normalizers and the caller's `normalize`) is
+ * identical across every adapter and the SSR path.
  */
 function prepareRenderState(
   runtime: Runtime,
@@ -91,15 +92,7 @@ function prepareRenderState(
   }
 
   const mergedProps = runtime.resolveProps(rest)
-  const htmlNormalizers = runtime.options.htmlPropNormalizersFn?.(tag)
-
-  const baseProps = htmlNormalizers?.length
-    ? htmlNormalizers.reduce((acc, fn) => ({ ...acc, ...fn(acc) }), mergedProps)
-    : mergedProps
-
-  const normalizedProps = runtime.options.normalizeFn
-    ? runtime.options.normalizeFn(baseProps)
-    : baseProps
+  const normalizedProps = resolveNormalizedProps(runtime.options, tag, mergedProps)
 
   const resolvedClass = runtime.resolveClasses(tag, normalizedProps, className, recipe)
   const filteredProps = applyFilter(normalizedProps, filterProps, runtime.options.variantKeys)

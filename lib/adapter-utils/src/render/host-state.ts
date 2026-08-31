@@ -1,7 +1,7 @@
 import type { AnyRecord, ElementType } from '@praxis-kit/core'
 import { enforceAllowedAs } from '@praxis-kit/core'
 import { isObject } from '@praxis-kit/primitive'
-import { applyFilter } from '../props'
+import { applyFilter, resolveNormalizedProps } from '../props'
 import type { SsrBundle } from './render-to-string'
 
 /**
@@ -76,18 +76,9 @@ export function resolveTagAndNormalizedProps(
 
   const tag = resolveTag(as as ElementType | undefined)
   const mergedProps = resolveProps(rest)
-  const normalizedProps =
-    typeof options.normalizeFn === 'function' ? options.normalizeFn(mergedProps) : mergedProps
+  const normalizedProps = resolveNormalizedProps(options, tag, mergedProps)
 
-  const htmlNormalizers = options.htmlPropNormalizersFn?.(tag)
-  const finalProps = { ...normalizedProps }
-  if (htmlNormalizers) {
-    for (const normalize of htmlNormalizers) {
-      Object.assign(finalProps, normalize(finalProps))
-    }
-  }
-
-  return { tag, normalizedProps: finalProps }
+  return { tag, normalizedProps }
 }
 
 /**

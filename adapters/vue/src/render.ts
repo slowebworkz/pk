@@ -1,4 +1,4 @@
-import { applyFilter } from '@praxis-kit/adapter-utils'
+import { applyFilter, resolveNormalizedProps } from '@praxis-kit/adapter-utils'
 import type { ElementType } from '@praxis-kit/core'
 import { enforceAllowedAs, isKnownAriaRole } from '@praxis-kit/core'
 import type { AnyRecord } from '@praxis-kit/primitive'
@@ -63,13 +63,7 @@ export function prepareRenderState(
   }
 
   const mergedProps = runtime.resolveProps(rest)
-  const htmlNormalizers = runtime.options.htmlPropNormalizersFn?.(tag)
-  const htmlNormalizedProps = htmlNormalizers?.length
-    ? htmlNormalizers.reduce((acc, fn) => ({ ...acc, ...fn(acc) }), mergedProps)
-    : mergedProps
-  const normalizedProps = runtime.options.normalizeFn
-    ? runtime.options.normalizeFn(htmlNormalizedProps)
-    : htmlNormalizedProps
+  const normalizedProps = resolveNormalizedProps(runtime.options, tag, mergedProps)
 
   const className = runtime.resolveClasses(tag, normalizedProps, callerClass, recipe)
   const filteredProps = applyFilter(normalizedProps, filterProps, runtime.options.variantKeys)

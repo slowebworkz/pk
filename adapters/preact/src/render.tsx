@@ -9,7 +9,7 @@ import type { Ref } from 'preact'
 import type { Writable } from 'type-fest'
 import type { ElementType, IntrinsicProps } from '@praxis-kit/core'
 import { enforceAllowedAs, isKnownAriaRole } from '@praxis-kit/core'
-import { applyFilter } from '@praxis-kit/adapter-utils'
+import { applyFilter, resolveNormalizedProps } from '@praxis-kit/adapter-utils'
 import type { SlotValidator } from './slot'
 import { isSlottableElement } from './slot'
 import type {
@@ -68,16 +68,7 @@ function prepareRenderState(
     )
   }
   const mergedProps = runtime.resolveProps(rest)
-  const htmlNormalizers = runtime.options.htmlPropNormalizersFn?.(tag)
-  const htmlNormalizedProps = htmlNormalizers?.length
-    ? htmlNormalizers.reduce((acc, fn) => ({ ...acc, ...fn(acc) }), mergedProps)
-    : mergedProps
-  // HTML built-ins run first so enforcement.props normalizers (composed into normalizeFn, see
-  // lib/primitive's composeNormalizers) and the caller's `normalize` option can see and override
-  // their output — matching the order the hand-rolled adapter used to enforce.
-  const normalizedProps = runtime.options.normalizeFn
-    ? runtime.options.normalizeFn(htmlNormalizedProps)
-    : htmlNormalizedProps
+  const normalizedProps = resolveNormalizedProps(runtime.options, tag, mergedProps)
   const resolvedClass = runtime.resolveClasses(tag, normalizedProps, className, recipe)
   const filteredProps = applyFilter(normalizedProps, filterProps, runtime.options.variantKeys)
   const directives: RenderDirectives = {
