@@ -12,8 +12,13 @@ export function createInputAttributeTypeRule({
   attribute,
   allowedTypes,
 }: AttributeTypePolicy<InputAttributeName>): AriaRule {
-  const rule = ({ tag, props }: AriaContext): readonly AriaResult[] => {
+  const rule = ({ tag, props, variantKeys }: AriaContext): readonly AriaResult[] => {
     if (tag !== 'input' || !(attribute in props)) return []
+    // A variant prop that happens to share this attribute's name (e.g. a styling-only
+    // `size` on a checkbox contract) is intercepted before the DOM — it never renders as
+    // the HTML attribute, so the "ignored for type" fact doesn't apply. See
+    // PRAXIS-KIT-FINDINGS.md #39.
+    if (variantKeys?.has(attribute)) return []
     const type = typeof props.type === 'string' ? props.type : DEFAULT_INPUT_TYPE
     if (allowedTypes.includes(type)) return []
     const diagnostic = HtmlDiagnostics.input.attributeIgnoredForType(attribute, type, allowedTypes)

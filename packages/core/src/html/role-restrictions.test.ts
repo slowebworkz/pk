@@ -8,7 +8,13 @@ function ctx(
   props: Record<string, unknown>,
   implicitRole: string | undefined,
 ): AriaContext {
-  return { tag: tag as AriaContext['tag'], props, implicitRole, effectiveRole: undefined }
+  return {
+    tag: tag as AriaContext['tag'],
+    props,
+    implicitRole,
+    effectiveRole: undefined,
+    variantKeys: new Set(),
+  }
 }
 
 describe('roleNotPermittedRule', () => {

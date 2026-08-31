@@ -24,7 +24,10 @@ export const createAriaPipeline: RenderPipeline<
   AriaPipelineResult
 > = (resolved) => {
   const rules = resolveAriaRules(resolved)
-  const engine = new AriaPolicyEngine(resolved.diagnostics, rules.length ? { rules } : undefined)
+  const engine = new AriaPolicyEngine(resolved.diagnostics, {
+    ...(rules.length > 0 && { rules }),
+    variantKeys: resolved.variantKeys,
+  })
   return (tag, props, extraProps) => engine.validate(tag, props, extraProps)
 }
 

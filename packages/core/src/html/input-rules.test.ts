@@ -23,12 +23,17 @@ import {
   INPUT_RULES,
 } from './input-rules'
 
-function ctx(props: Record<string, unknown>, tag = 'input'): AriaContext {
+function ctx(
+  props: Record<string, unknown>,
+  tag = 'input',
+  variantKeys: ReadonlySet<string> = new Set(),
+): AriaContext {
   return {
     tag: tag as AriaContext['tag'],
     props,
     implicitRole: undefined,
     effectiveRole: undefined,
+    variantKeys,
   }
 }
 
@@ -175,6 +180,15 @@ describe('sizeRequiresTextTypeRule', () => {
   it('flags size on type="checkbox"', () => {
     const [result] = sizeRequiresTextTypeRule(ctx({ type: 'checkbox', size: 20 }))
     expect(result).toMatchObject({ valid: false, severity: 'warning' })
+  })
+
+  it('does not flag a "size" key that is a declared component variant (#39)', () => {
+    // A `size` styling variant on a checkbox/radio contract collides in name with the HTML
+    // `size` attribute but is stripped before the DOM — the "ignored for type" fact must not
+    // fire for it.
+    expect(
+      sizeRequiresTextTypeRule(ctx({ type: 'checkbox', size: 'lg' }, 'input', new Set(['size']))),
+    ).toEqual([])
   })
 })
 
