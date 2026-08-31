@@ -16,6 +16,31 @@ import { resolveDiagnostics, silentDiagnostics } from '@praxis-kit/diagnostics'
 
 const EMPTY_VARIANT_KEYS: ReadonlySet<string> = new Set()
 
+// `normalize` accepts either a single transform or an array of them (the same shape convention
+// as `enforcement.props`). Collapse the array here — before `composeNormalizers` — into one
+// `NormalizeFn` so the rest of the pipeline only ever sees a single function. The reduction is a
+// straight left-to-right hand-off (`fn(acc)`), NOT the merge-by-spread `composeNormalizers` uses
+// for `PropNormalizer`s: a `NormalizeFn` returns the whole props object, so a later entry must be
+// able to drop a key an earlier one set — spreading each result onto an accumulator would silently
+// resurrect it.
+function toNormalizeFn<Props extends AnyRecord>(
+  normalize: NormalizeFn<Props> | readonly NormalizeFn<Props>[] | undefined,
+): NormalizeFn<Props> | undefined {
+  if (!Array.isArray(normalize)) {
+    // The `false` branch of `Array.isArray` can't exclude `readonly T[]` from the union, so narrow
+    // by hand: anything not an array here is `NormalizeFn<Props> | undefined`.
+    return normalize as NormalizeFn<Props> | undefined
+  }
+  const fns = normalize as readonly NormalizeFn<Props>[]
+  if (fns.length === 0) return undefined
+  if (fns.length === 1) return fns[0]
+  return ((props) =>
+    fns.reduce<Props & IntrinsicProps>(
+      (acc, fn) => fn(acc),
+      props as Props & IntrinsicProps,
+    )) as NormalizeFn<Props>
+}
+
 function composeNormalizers<Props extends AnyRecord>(
   normalizers: readonly PropNormalizer[] | undefined,
   fn: NormalizeFn<Props> | undefined,
@@ -59,7 +84,10 @@ export function resolveFactoryOptions<
   options: FactoryOptions<TDefault, Props, V, TPreset, AnyClassPluginFactory> = {},
 ): Readonly<ResolvedFactoryOptions<TDefault, Props, V, TPreset>> {
   const { styling, enforcement } = options
-  const composedNormalizeFn = composeNormalizers(enforcement?.props, options.normalize)
+  const composedNormalizeFn = composeNormalizers(
+    enforcement?.props,
+    toNormalizeFn(options.normalize),
+  )
 
   const variantKeys: ReadonlySet<string> =
     styling?.variants === undefined ? EMPTY_VARIANT_KEYS : new Set(Object.keys(styling.variants))

@@ -46,8 +46,14 @@ export type FactoryOptions<
    * A pure `(props) => props` transform run on every render, after `enforcement.props`'s
    * normalizers see the same input. Use this for component-specific prop shaping — anything
    * that depends on live instance state or the real DOM element belongs in `onElement` instead.
+   *
+   * Accepts either a single transform or an array of them, mirroring the `enforcement.props`
+   * array convention. An array is composed left to right — each entry receives the previous
+   * entry's *complete* output, not a merged patch — so unlike an `enforcement.props` normalizer
+   * (which returns a partial patch), a later `normalize` entry can also remove a key an earlier
+   * one added. An empty array is treated as no transform.
    */
-  readonly normalize?: NormalizeFn<NoInfer<Props>>
+  readonly normalize?: NormalizeFn<NoInfer<Props>> | ReadonlyArray<NormalizeFn<NoInfer<Props>>>
   /** Variant groups, base classes, presets, and the optional class-resolution plugin. */
   readonly styling?: StylingOptions<V, TPreset, TPlugin>
   /** ARIA rules, child-content contracts, and other runtime validation for this component. */
