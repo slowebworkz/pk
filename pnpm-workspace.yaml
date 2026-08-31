@@ -20,8 +20,8 @@ catalog:
   # Playwright
   "@axe-core/playwright": ^4.11.3
   "@eslint/js": ^10.0.0
-  "@playwright/experimental-ct-react": ^1.62.0
-  "@playwright/experimental-ct-vue": ^1.62.0
+  "@playwright/experimental-ct-react": ^1.62.1
+  "@playwright/experimental-ct-vue": ^1.62.1
   "@playwright/test": ^1.62.1
 
   # Preact
