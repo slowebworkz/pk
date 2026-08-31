@@ -34,11 +34,11 @@ function toNormalizeFn<Props extends AnyRecord>(
   const fns = normalize as readonly NormalizeFn<Props>[]
   if (fns.length === 0) return undefined
   if (fns.length === 1) return fns[0]
-  return ((props) =>
-    fns.reduce<Props & IntrinsicProps>(
-      (acc, fn) => fn(acc),
-      props as Props & IntrinsicProps,
-    )) as NormalizeFn<Props>
+  return ((props) => {
+    let acc = props as Props & IntrinsicProps
+    for (const fn of fns) acc = fn(acc)
+    return acc
+  }) as NormalizeFn<Props>
 }
 
 function composeNormalizers<Props extends AnyRecord>(
@@ -47,11 +47,12 @@ function composeNormalizers<Props extends AnyRecord>(
 ): NormalizeFn<Props> | undefined {
   if (!normalizers?.length) return fn
   return ((props) => {
-    const patched = normalizers.reduce(
-      (acc, normalizer) => ({ ...acc, ...normalizer(acc) }),
-      props as AnyRecord,
-    ) as Props & IntrinsicProps
-    return fn ? fn(patched as Readonly<Props & IntrinsicProps>) : patched
+    // Shallow-copy once so the caller's props object is never mutated, then merge each
+    // normalizer's partial patch onto that single accumulator in order.
+    const patched: AnyRecord = { ...props }
+    for (const normalizer of normalizers) Object.assign(patched, normalizer(patched))
+    const resolved = patched as Props & IntrinsicProps
+    return fn ? fn(resolved as Readonly<Props & IntrinsicProps>) : resolved
   }) as NormalizeFn<Props>
 }
 
