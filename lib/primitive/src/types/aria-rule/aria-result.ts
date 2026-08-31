@@ -21,8 +21,7 @@ export type AriaInvalidWithoutFix<M extends string = string> = AriaInvalidBase<M
 }
 
 export type AriaInvalidResult<M extends string = string> =
-  | AriaInvalidWithFix<M>
-  | AriaInvalidWithoutFix<M>
+  AriaInvalidWithFix<M> | AriaInvalidWithoutFix<M>
 
 export type AriaResult = ValidResult | AriaInvalidResult
 

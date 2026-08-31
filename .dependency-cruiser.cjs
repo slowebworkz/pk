@@ -64,7 +64,10 @@ module.exports = {
       severity: 'error',
       comment: 'core must remain framework-agnostic — no Vue imports allowed',
       from: { path: '^packages/core/' },
-      to: { dependencyTypes: ['npm', 'npm-dev', 'npm-peer', 'npm-no-pkg', 'unknown'], path: '^(vue|@vue/)' },
+      to: {
+        dependencyTypes: ['npm', 'npm-dev', 'npm-peer', 'npm-no-pkg', 'unknown'],
+        path: '^(vue|@vue/)',
+      },
     },
     {
       name: 'lib-primitive-no-frameworks',
@@ -116,13 +119,19 @@ module.exports = {
       name: 'react-no-vue-pkg',
       severity: 'error',
       from: { path: '^packages/react/' },
-      to: { dependencyTypes: ['npm', 'npm-dev', 'npm-peer', 'npm-no-pkg', 'unknown'], path: '^(vue|@vue/)' },
+      to: {
+        dependencyTypes: ['npm', 'npm-dev', 'npm-peer', 'npm-no-pkg', 'unknown'],
+        path: '^(vue|@vue/)',
+      },
     },
     {
       name: 'vue-no-react-pkg',
       severity: 'error',
       from: { path: '^packages/vue/' },
-      to: { dependencyTypes: ['npm', 'npm-dev', 'npm-peer', 'npm-no-pkg', 'unknown'], path: '^(react|react-dom)' },
+      to: {
+        dependencyTypes: ['npm', 'npm-dev', 'npm-peer', 'npm-no-pkg', 'unknown'],
+        path: '^(react|react-dom)',
+      },
     },
 
     // ── dependency direction ───────────────────────────────────────────────
