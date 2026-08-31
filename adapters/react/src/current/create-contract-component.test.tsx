@@ -482,6 +482,22 @@ describe('createContractComponent (current / React 19)', () => {
     warn.mockRestore()
   })
 
+  it('html contract: skipped for a valid asChild composition (no false "unexpected child")', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    // <button> is a closed contract that rejects interactive/opaque children. With asChild,
+    // Trigger's props merge onto the inner element and no <button> of Trigger's own is
+    // rendered, so the contract must not evaluate the pre-merge child.
+    const Trigger = createContractComponent({ tag: 'button', name: 'Trigger' })
+    const Inner = createContractComponent({ tag: 'button', name: 'Inner' })
+
+    dom.mount(
+      createElement(box(Trigger), { asChild: true }, createElement(box(Inner), null, 'Filters')),
+    )
+
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
   })
