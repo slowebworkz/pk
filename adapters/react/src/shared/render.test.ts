@@ -442,6 +442,67 @@ describe('render', () => {
     expect((el.props as { children: unknown }).children).toBe(child)
   })
 
+  describe('children evaluators vs. asChild', () => {
+    const child = createElement('a', { href: '/' })
+
+    function renderWith(props: Record<string, unknown>): {
+      html: ReturnType<typeof vi.fn>
+      consumer: ReturnType<typeof vi.fn>
+    } {
+      const html = vi.fn()
+      const consumer = vi.fn()
+      render({
+        runtime: makeRuntime({
+          options: {
+            defaultTag: 'button',
+            variantKeys: new Set(),
+            displayName: 'Test',
+            diagnostics: silentDiagnostics,
+            htmlChildrenEvaluatorFn: (() => ({ evaluate: html })) as never,
+          },
+        }),
+        props,
+        ref: null,
+        slotComponent,
+        normalizeChildren: () => [child],
+        filterProps: noopFilter,
+        slotValidator: new SlotValidator('Test', silentDiagnostics, 'React element'),
+        childrenEvaluator: { evaluate: consumer } as never,
+      })
+      return { html, consumer }
+    }
+
+    it('runs both evaluators for a normally-rendered element', () => {
+      const { html, consumer } = renderWith({ children: child })
+      expect(html).toHaveBeenCalledOnce()
+      expect(consumer).toHaveBeenCalledOnce()
+    })
+
+    it('skips both evaluators for a valid asChild composition', () => {
+      // Regression: the pre-merge child is not what renders (asChild merges props onto
+      // it), so evaluating the button content-model contract against it false-fired
+      // COMP1004 "unexpected child" on every interactive-tag asChild composition.
+      const { html, consumer } = renderWith({ asChild: true, children: child })
+      expect(html).not.toHaveBeenCalled()
+      expect(consumer).not.toHaveBeenCalled()
+    })
+
+    it('still runs both evaluators when asChild is combined with as (invalid combo, own tag renders)', () => {
+      const { html, consumer } = renderWith({ as: 'span', asChild: true, children: child })
+      expect(html).toHaveBeenCalledOnce()
+      expect(consumer).toHaveBeenCalledOnce()
+    })
+
+    it('skips both evaluators when a render callback owns the output', () => {
+      const { html, consumer } = renderWith({
+        children: child,
+        render: (p: Record<string, unknown>) => createElement('span', p),
+      })
+      expect(html).not.toHaveBeenCalled()
+      expect(consumer).not.toHaveBeenCalled()
+    })
+  })
+
   it('control props (as, asChild, className, recipe, children) are not forwarded to the DOM', () => {
     const el = render({
       runtime: makeRuntime(),
