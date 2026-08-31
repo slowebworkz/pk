@@ -1,4 +1,4 @@
-import { applyFilter } from '@praxis-kit/adapter-utils'
+import { applyFilter, resolveNormalizedProps } from '@praxis-kit/adapter-utils'
 import type { ElementType, IntrinsicProps } from '@praxis-kit/core'
 import { enforceAllowedAs, isKnownAriaRole } from '@praxis-kit/core'
 import { isString } from '@praxis-kit/primitive'
@@ -104,15 +104,9 @@ export function render<TProps extends KnownProps>({
 
   const tag = createMemo(() => resolveTag(runtime, known.as))
   const mergedProps = createMemo(() => runtime.resolveProps(rest as UnknownProps))
-  const normalizedProps = createMemo(() => {
-    const base = runtime.options.normalizeFn
-      ? runtime.options.normalizeFn(mergedProps())
-      : mergedProps()
-    const htmlNormalizers = runtime.options.htmlPropNormalizersFn?.(tag())
-    return htmlNormalizers?.length
-      ? htmlNormalizers.reduce((acc, fn) => ({ ...acc, ...fn(acc) }), base)
-      : base
-  })
+  const normalizedProps = createMemo(() =>
+    resolveNormalizedProps(runtime.options, tag(), mergedProps()),
+  )
   const resolvedClass = createMemo(() =>
     runtime.resolveClasses(
       tag(),

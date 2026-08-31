@@ -193,4 +193,22 @@ export function ssrConformanceSuite<C extends ConformanceComponent = Conformance
       expect(html).toContain('role="dialog"')
     })
   })
+
+  // ── prop normalization ordering ──────────────────────────────────────────────
+
+  describe('ssr — prop normalization ordering', () => {
+    it("a normalize option observes the HTML built-in normalizers' output", async () => {
+      // `disabledProps` sets aria-disabled="true" on a disabled <button>. The
+      // caller's `normalize` must run after the HTML built-ins so it can see
+      // that value — the same ordering the DOM render paths use.
+      const Button = adapter.createComponent({
+        tag: 'button',
+        enforcement: { diagnostics: silentDiagnostics },
+        normalize: (props: AnyRecord) =>
+          props['aria-disabled'] === 'true' ? { ...props, 'data-observed-aria': 'yes' } : props,
+      })
+      const html = await adapter.renderToString(Button, { disabled: true })
+      expect(html).toContain('data-observed-aria="yes"')
+    })
+  })
 }

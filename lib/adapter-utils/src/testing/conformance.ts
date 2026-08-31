@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import type { AnyRecord } from '@praxis-kit/core'
 import type { ConformanceAdapter, ConformanceComponent } from '../types'
 import { throwDiagnostics, warnDiagnostics, silentDiagnostics } from '@praxis-kit/diagnostics'
 import { dynamic } from '@praxis-kit/primitive'
@@ -117,6 +118,25 @@ export function conformanceSuite<C extends ConformanceComponent = ConformanceCom
         expect(element.getAttribute('loading')).toBeNull()
         expect(element.getAttribute('data-keep')).toBe('yes')
       })
+  })
+
+  // ── prop normalization ordering ──────────────────────────────────────────────
+
+  describe('conformance — prop normalization ordering', () => {
+    it("a normalize option observes the HTML built-in normalizers' output", () => {
+      // On <button>, the built-in `disabledProps` sets aria-disabled="true" when
+      // `disabled` is present. Every adapter (and the SSR path) must run the
+      // caller's `normalize` *after* the HTML built-ins, so it can see that
+      // value — the ordering React documents. When the order is reversed,
+      // `normalize` runs first, sees no aria-disabled, and the marker is absent.
+      const Btn = adapter.createComponent({
+        tag: 'button',
+        normalize: (props: AnyRecord) =>
+          props['aria-disabled'] === 'true' ? { ...props, 'data-observed-aria': 'yes' } : props,
+      })
+      const { element } = adapter.render(Btn, { disabled: true })
+      expect(element.getAttribute('data-observed-aria')).toBe('yes')
+    })
   })
 
   // ── ARIA forwarding ───────────────────────────────────────────────────────────

@@ -41,4 +41,9 @@ export type ConformanceFactoryOptions = {
   filterProps?: (key: string, variantKeys: ReadonlySet<string>) => boolean
   /** Child enforcement rules applied by the generated component. */
   enforcement?: ConformanceEnforcement
+  /**
+   * Component-specific prop transform. Runs *after* the built-in HTML prop
+   * normalizers on every adapter, so it can observe and override their output.
+   */
+  normalize?: (props: AnyRecord) => AnyRecord
 }

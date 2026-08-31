@@ -2,7 +2,7 @@ import type { AnyRecord, ElementType } from '@praxis-kit/core'
 import { enforceAllowedAs } from '@praxis-kit/core'
 import { iterate } from '@praxis-kit/primitive'
 
-import { applyFilter } from '../props'
+import { applyFilter, resolveNormalizedProps } from '../props'
 
 import type { Diagnostics } from '@praxis-kit/diagnostics'
 import type { FilterPredicate } from '../types'
@@ -78,18 +78,7 @@ export function renderBundleToString(
     enforceAllowedAs(tag, options.allowedAs, options.diagnostics, options.displayName)
   }
   const mergedProps = resolveProps(rest)
-  const normalizedProps =
-    typeof options.normalizeFn === 'function' ? options.normalizeFn(mergedProps) : mergedProps
-
-  // Object.assign into a running copy rather than reduce()'s ({ ...acc, ...fn(acc) })
-  // — that allocates two extra objects per normalizer on top of the accumulator.
-  const htmlNormalizers = options.htmlPropNormalizersFn?.(tag)
-  const finalProps = { ...normalizedProps }
-  if (htmlNormalizers) {
-    for (const normalize of htmlNormalizers) {
-      Object.assign(finalProps, normalize(finalProps))
-    }
-  }
+  const finalProps = resolveNormalizedProps(options, tag, mergedProps)
 
   const resolvedClass = resolveClasses(
     tag,

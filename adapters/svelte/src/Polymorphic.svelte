@@ -19,7 +19,7 @@
   import { enforceAllowedAs, isKnownAriaRole } from '@praxis-kit/core'
   import type { ElementType, IntrinsicProps } from '@praxis-kit/core'
   import { isObject, isString } from '@praxis-kit/primitive'
-  import { applyFilter } from '@praxis-kit/adapter-utils'
+  import { applyFilter, resolveNormalizedProps } from '@praxis-kit/adapter-utils'
   import type { Snippet } from 'svelte'
   import type {
     PolymorphicComponentProps,
@@ -114,16 +114,7 @@
         options.displayName,
       )
     }
-    const base =
-      typeof options.normalizeFn === 'function' ? options.normalizeFn(mergedProps) : mergedProps
-
-    const htmlNormalizers = options.htmlPropNormalizersFn?.(tag)
-
-    if (!htmlNormalizers?.length) {
-      return base
-    }
-
-    return htmlNormalizers.reduce((acc, fn) => ({ ...acc, ...fn(acc) }), base)
+    return resolveNormalizedProps(options, tag, mergedProps)
   })
   const resolvedClass = $derived(
     bundle.runtime.resolveClasses(tag, normalizedProps, cls as string | undefined, recipe),
