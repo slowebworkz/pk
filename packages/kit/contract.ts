@@ -15,9 +15,17 @@ export {
 } from '@praxis-kit/core'
 export type {
   AnyFactoryOptions,
+  // The generic authoring type. `satisfies FactoryOptions<'textarea', Props, typeof variants>`
+  // in a framework-neutral `create.ts` narrows `styling.compounds` conditions to the real
+  // variant shape — including resolving a boolean-shaped axis (`{ true, false }`) to a real
+  // `boolean` — which the type-erased `AnyFactoryOptions` cannot. See PRAXIS-KIT-FINDINGS.md
+  // #29/#35.
+  EnforcementOptions,
+  FactoryOptions,
   IntrinsicProps,
   NormalizeFn,
   PropNormalizer,
+  StylingOptions,
 } from '@praxis-kit/core'
 export type Diagnostics = DiagnosticsClass
 export {
