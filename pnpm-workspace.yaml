@@ -70,7 +70,7 @@ catalog:
   react-dom: ^19.2.8
 
   # Solid
-  solid-js: ^1.9.0
+  solid-js: ^1.9.15
 
   # Svelte
   svelte: ^5.56.10
