@@ -34,7 +34,7 @@
     "@praxis-kit/tailwind": "workspace:*",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "^8.2.1",
+    "vite": "^8.2.2",
     "vitest": "catalog:"
   },
   "repository": {
